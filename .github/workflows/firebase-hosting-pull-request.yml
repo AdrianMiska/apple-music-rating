@@ -6,11 +6,17 @@ name: Deploy to Firebase Hosting on PR
 jobs:
   build_and_preview:
     runs-on: ubuntu-latest
-    environment: Review
+    environment:
+      name: Review
+      url: '${{ steps.firebase-deploy.outputs.details_url }}'
+    permissions:
+      pull-requests: write
+      checks: write
     steps:
       - uses: actions/checkout@v2
       - run: npm ci && npm run build
-      - uses: FirebaseExtended/action-hosting-deploy@v0
+      - id: firebase-deploy
+        uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ELO_MUSIC_RATING }}'
