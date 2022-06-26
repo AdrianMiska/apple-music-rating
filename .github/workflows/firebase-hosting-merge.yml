@@ -11,10 +11,12 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: Production
-      url: ${{ steps.firebase-deploy.outputs.details_url }}
+      url: 'https://elo-music-rating.web.app/'
     steps:
       - uses: actions/checkout@v2
       - run: npm ci && npm run build
+        env:
+          REACT_APP_MUSIC_KIT_DEVELOPER_TOKEN: '${{ secrets.REACT_APP_MUSIC_KIT_DEVELOPER_TOKEN }}'
       - id: firebase-deploy
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:

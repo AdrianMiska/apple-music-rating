@@ -8,13 +8,14 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: Review
-      url: ${{ steps.firebase-deploy.outputs.details_url }}
     permissions:
       pull-requests: write
       checks: write
     steps:
       - uses: actions/checkout@v2
       - run: npm ci && npm run build
+        env:
+          REACT_APP_MUSIC_KIT_DEVELOPER_TOKEN: '${{ secrets.REACT_APP_MUSIC_KIT_DEVELOPER_TOKEN }}'
       - id: firebase-deploy
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
