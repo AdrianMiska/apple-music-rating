@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: Review
-      url: '${{ steps.firebase-deploy.outputs.details_url }}'
+      url: ${{ steps.firebase-deploy.outputs.details_url }}
     permissions:
       pull-requests: write
       checks: write
