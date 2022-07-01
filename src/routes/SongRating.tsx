@@ -73,6 +73,7 @@ export function SongRating() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [inputSongs]);
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async function createOutputPlaylist(name: string | undefined) {
         let createdPlaylist = await createPlaylist(`${name} Sorted`, `Sorted version of ${name} by Music Rating`);
         // TODO songs sorted by elo
