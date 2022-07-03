@@ -21,8 +21,8 @@ function PlaylistSong(props: { song: MusicKit.Songs | MusicKit.MusicVideos, rati
 
     function getArtworkUrl() {
         let artwork = props.song.attributes?.artwork;
-        let height = props.song.attributes?.artwork.height;
-        let width = props.song.attributes?.artwork.width;
+        let height = artwork?.height;
+        let width = artwork?.width;
         return artwork && height && width
             ? window.MusicKit.formatArtworkURL(artwork, height, width)
             : "";
