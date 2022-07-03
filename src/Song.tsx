@@ -1,5 +1,5 @@
 import {getEloRating} from "./EloUtils";
-import React from "react";
+import React, {useEffect, useRef} from "react";
 
 /**
  * Displays a song with its album art, title, and artist.
@@ -7,36 +7,41 @@ import React from "react";
  * Below a play button which when clicked will play a preview of the song.
  *
  */
-export class Song extends React.Component<{ song: MusicKit.Songs | MusicKit.MusicVideos }, { previewUrl: string | null }> {
+export function Song(props: { song: MusicKit.Songs | MusicKit.MusicVideos, playlistId: string }) {
 
-    private readonly audio: React.RefObject<HTMLAudioElement>;
+    let audio = useRef<HTMLAudioElement>(null);
+    let [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
+    let [rating, setRating] = React.useState<number>(0);
+    let [isPlaying, setIsPlaying] = React.useState<boolean>(false);
 
-    constructor(props: { song: MusicKit.Songs | MusicKit.MusicVideos }) {
-        super(props);
-        this.state = {
-            previewUrl: null
-        }
-        this.audio = React.createRef<HTMLAudioElement>();
-    }
+    let player = window.MusicKit.getInstance().player;
 
-    componentDidMount() {
-        this.getPreviewUrl(this.props.song).then(previewUrl => {
-            this.setState({previewUrl});
-        })
-    }
+    player.addEventListener("playbackStateDidChange", () => {
+        // @ts-ignore
+        setIsPlaying(player.isPlaying && player.nowPlayingItem?.container.id === props.song.id);
+    });
 
-    componentDidUpdate(prevProps: { song: MusicKit.Songs | MusicKit.MusicVideos }) {
-        if (prevProps.song !== this.props.song) {
-            this.getPreviewUrl(this.props.song).then(previewUrl => {
-                this.setState({previewUrl}, () => {
-                    this.audio.current?.pause();
-                    this.audio.current?.load();
-                });
-            })
-        }
-    }
+    useEffect(() => {
+        // @ts-ignore
+        setIsPlaying(player.isPlaying && player.nowPlayingItem?.container.id === props.song.id);
+    }, [player.nowPlayingItem, player.isPlaying, props.song.id]);
 
-    async getPreviewUrl(song: MusicKit.Songs | MusicKit.MusicVideos): Promise<string | null> {
+    useEffect(() => {
+        getPreviewUrl(props.song).then(previewUrl => {
+            setPreviewUrl(previewUrl);
+        });
+        getEloRating(props.playlistId, props.song).then(rating => {
+            setRating(rating);
+        });
+    }, [props.song, props.playlistId]);
+
+    useEffect(() => {
+        audio.current?.pause();
+        audio.current?.load();
+    }, [previewUrl]);
+
+
+    async function getPreviewUrl(song: MusicKit.Songs | MusicKit.MusicVideos): Promise<string | null> {
         const music = window.MusicKit.getInstance();
 
         // @ts-ignore
@@ -50,40 +55,80 @@ export class Song extends React.Component<{ song: MusicKit.Songs | MusicKit.Musi
         return catalogSong.attributes?.previews[0].url || null;
     }
 
-    async play() {
+    async function playFullSong() {
         const music = window.MusicKit.getInstance();
 
-        if (music.player.isPlaying) {
-            //music.player.pause();
+        if (player.isPlaying) {
+            player.stop();
         }
-        await music.setQueue({song: this.props.song.id});
-        music.player.volume = 0;
-        await music.play();
-        music.player.volume = 1;
+
+        audio.current?.pause();
+        audio.current?.load();
+
+        player.volume = 0.5;
+        await music.setQueue({song: props.song.id});
+        await player.play();
+        setIsPlaying(true);
     }
 
-    render() {
+    async function stop() {
+        await player.stop();
+        audio.current?.pause();
+        audio.current?.load();
+        setIsPlaying(false);
+    }
 
-        let artworkAvailable = this.props.song.attributes?.artwork && this.props.song.attributes.artwork.height && this.props.song.attributes.artwork.width;
-        let artworkURL = artworkAvailable
-            ? window.MusicKit.formatArtworkURL(this.props.song.attributes!.artwork, this.props.song.attributes!.artwork.height, this.props.song.attributes!.artwork.width)
+    async function playPreview() {
+        audio.current?.pause();
+        audio.current?.load();
+        await audio.current?.play();
+        setIsPlaying(true);
+    }
+
+    function getArtworkUrl() {
+        let artwork = props.song.attributes?.artwork;
+        let height = props.song.attributes?.artwork.height;
+        let width = props.song.attributes?.artwork.width;
+        return artwork && height && width
+            ? window.MusicKit.formatArtworkURL(artwork, height, width)
             : "";
-        return <div className="flex flex-col items-center">
-            <img className="w-32 h-32 rounded mb-4"
-                 src={artworkURL}
-                 alt={`${this.props.song.attributes?.name} by ${this.props.song.attributes?.artistName} album art`}/>
-
-            <div className="text-center">
-                <h1 className="text-2xl font-bold mb-2">{this.props.song.attributes?.name}</h1>
-                <h2 className="text-sm font-semibold mb-2">{this.props.song.attributes?.artistName}</h2>
-                <h2 className="text-sm font-semibold mb-2">Elo: {getEloRating(this.props.song)}</h2>
-
-                {this.state.previewUrl &&
-                    <audio controls ref={this.audio}>
-                        <source src={this.state.previewUrl} type="audio/mpeg"/>
-                    </audio>
-                }
-            </div>
-        </div>;
     }
+
+    return <div className="flex flex-col items-center">
+        <img className="w-32 h-32 rounded mb-4"
+             src={getArtworkUrl()}
+             alt={`${props.song.attributes?.name} by ${props.song.attributes?.artistName} album art`}/>
+
+        <div className="text-center">
+            <h1 className="text-2xl font-bold mb-2">{props.song.attributes?.name}</h1>
+            <h2 className="text-sm font-semibold mb-2">{props.song.attributes?.artistName}</h2>
+            <h2 className="text-sm font-semibold mb-2">Elo: {rating.toFixed(1)}</h2>
+
+            {previewUrl &&
+                <audio ref={audio}>
+                    <source src={previewUrl} type="audio/mpeg"/>
+                </audio>
+            }
+            {!isPlaying &&
+                <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                        onClick={playPreview}>
+                    Play preview
+                </button>
+            }
+
+            {!isPlaying &&
+                <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                        onClick={playFullSong}>
+                    Play full song
+                </button>
+            }
+            {isPlaying &&
+                <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                        onClick={stop}>
+                    Stop
+                </button>
+            }
+        </div>
+    </div>;
+
 }

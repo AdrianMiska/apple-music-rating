@@ -6,7 +6,12 @@ reflect the songs you like the most, so you can export them to a new, ordered pl
 
 ## Current State
 
-At the moment the application is in its earliest stages of development. I'm still trying things out and adding new features.
+At the moment the application is in its earliest stages of development and barely working. I'm still trying things out and adding new features.
+
+My current priorities are:
+* Design
+* Adding Auth providers
+* Adding Spotify support
 
 ## Local Development
 

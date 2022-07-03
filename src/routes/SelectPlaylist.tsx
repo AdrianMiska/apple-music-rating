@@ -1,9 +1,9 @@
 import React, {useEffect} from "react";
 import {createPlaylist, updatePlaylist} from "../PlaylistUtils";
+import {useNavigate} from "react-router-dom";
 import Playlists = MusicKit.Playlists;
 import LibraryPlaylists = MusicKit.LibraryPlaylists;
 import Songs = MusicKit.Songs;
-import {useNavigate} from "react-router-dom";
 
 
 export function SelectPlaylist() {
@@ -139,7 +139,7 @@ export function SelectPlaylist() {
         {heavyRotation
             .sort((a, b) => a.attributes && b.attributes ? a.attributes.name.localeCompare(b.attributes.name) : 0)
             .map(playlist => {
-                return <div>
+                return <div key={"heavy-rotation-" + playlist.id}>
                     <button className="bg-slate-500 hover:bg-slate-700
                     text-white font-bold py-2 px-4 rounded"
                             onClick={() => navigate("/song-rating/" + playlist.id)}>
@@ -153,12 +153,12 @@ export function SelectPlaylist() {
                className={"bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-slate-500"}
                value={searchTerm}
                onChange={e => {
-                     setSearchTerm(e.target.value);
-                        search(e.target.value);
+                   setSearchTerm(e.target.value);
+                   search(e.target.value);
                }}/>
         <div>
             {searchResults?.map(playlist => {
-                return <div>
+                return <div key={"search-" + playlist.id}>
                     <button className="bg-slate-500 hover:bg-slate-700
                         text-white font-bold py-2 px-4 rounded"
                             onClick={() => navigate("/song-rating/" + playlist.id)}>
