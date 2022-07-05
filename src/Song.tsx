@@ -1,5 +1,5 @@
 import {getEloRating} from "./EloUtils";
-import React, {useEffect, useRef} from "react";
+import React, {useEffect} from "react";
 
 /**
  * Displays a song with its album art, title, and artist.
@@ -9,80 +9,47 @@ import React, {useEffect, useRef} from "react";
  */
 export function Song(props: { song: MusicKit.Songs | MusicKit.MusicVideos, playlistId: string }) {
 
-    let audio = useRef<HTMLAudioElement>(null);
-    let [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
     let [rating, setRating] = React.useState<number>(0);
     let [isPlaying, setIsPlaying] = React.useState<boolean>(false);
 
-    let player = window.MusicKit.getInstance().player;
+    let music = window.MusicKit.getInstance();
 
-    player.addEventListener("playbackStateDidChange", () => {
+    // @ts-ignore
+    let nowPlayingItem = music.nowPlayingItem;
+    // @ts-ignore
+    let playing = music.isPlaying;
+    music.addEventListener("playbackStateDidChange", () => {
         // @ts-ignore
-        setIsPlaying(player.isPlaying && player.nowPlayingItem?.container.id === props.song.id);
+        setIsPlaying(music.isPlaying && music.nowPlayingItem?.container.id === props.song.id);
     });
 
-    useEffect(() => {
-        // @ts-ignore
-        setIsPlaying(player.isPlaying && player.nowPlayingItem?.container.id === props.song.id);
-    }, [player.nowPlayingItem, player.isPlaying, props.song.id]);
 
     useEffect(() => {
-        getPreviewUrl(props.song).then(previewUrl => {
-            setPreviewUrl(previewUrl);
-        });
+        // @ts-ignore
+        setIsPlaying(playing && nowPlayingItem?.container.id === props.song.id);
+    }, [nowPlayingItem, playing, props.song.id]);
+
+    useEffect(() => {
         getEloRating(props.playlistId, props.song).then(rating => {
             setRating(rating);
         });
     }, [props.song, props.playlistId]);
 
-    useEffect(() => {
-        audio.current?.pause();
-        audio.current?.load();
-    }, [previewUrl]);
-
-
-    async function getPreviewUrl(song: MusicKit.Songs | MusicKit.MusicVideos): Promise<string | null> {
+    async function playPreview() {
         const music = window.MusicKit.getInstance();
+        // @ts-ignore
+        music.previewOnly = true;
 
         // @ts-ignore
-        let catalogId = song.attributes?.playParams?.catalogId;
-
-        if (!catalogId) {
-            return null;
-        }
-
-        const catalogSong = await music.api.song(catalogId);
-        return catalogSong.attributes?.previews[0].url || null;
-    }
-
-    async function playFullSong() {
-        const music = window.MusicKit.getInstance();
-
-        if (player.isPlaying) {
-            player.stop();
-        }
-
-        audio.current?.pause();
-        audio.current?.load();
-
-        player.volume = 0.5;
-        await music.setQueue({song: props.song.id});
-        await player.play();
+        //music.volume = 0.5;
+        // @ts-ignore
+        await music.setQueue({song: props.song.id, startPlaying: true});
         setIsPlaying(true);
     }
 
     async function stop() {
-        await player.stop();
-        audio.current?.pause();
-        audio.current?.load();
+        await music.stop();
         setIsPlaying(false);
-    }
-
-    async function playPreview() {
-        audio.current?.pause();
-        audio.current?.load();
-        await audio.current?.play();
-        setIsPlaying(true);
     }
 
     function getArtworkUrl() {
@@ -104,22 +71,10 @@ export function Song(props: { song: MusicKit.Songs | MusicKit.MusicVideos, playl
             <h2 className="text-sm font-semibold mb-2">{props.song.attributes?.artistName}</h2>
             <h2 className="text-sm font-semibold mb-2">Elo: {rating.toFixed(1)}</h2>
 
-            {previewUrl &&
-                <audio ref={audio}>
-                    <source src={previewUrl} type="audio/mpeg"/>
-                </audio>
-            }
             {!isPlaying &&
                 <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                         onClick={playPreview}>
                     Play preview
-                </button>
-            }
-
-            {!isPlaying &&
-                <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                        onClick={playFullSong}>
-                    Play full song
                 </button>
             }
             {isPlaying &&

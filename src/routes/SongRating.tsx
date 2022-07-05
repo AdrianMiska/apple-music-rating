@@ -4,13 +4,9 @@ import {calculateElo, getEloRatings} from "../EloUtils";
 import {Song} from "../Song";
 import {useNavigate, useParams} from "react-router-dom";
 import {ChevronLeftIcon, PlusIcon} from "@heroicons/react/outline";
-import Songs = MusicKit.Songs;
-import MusicVideos = MusicKit.MusicVideos;
-import LibraryPlaylists = MusicKit.LibraryPlaylists;
-import Playlists = MusicKit.Playlists;
 
 class RatingPair {
-    constructor(public baseline: Songs | MusicVideos, public candidate: Songs | MusicVideos) {
+    constructor(public baseline: MusicKit.Songs | MusicKit.MusicVideos, public candidate: MusicKit.Songs | MusicKit.MusicVideos) {
     }
 }
 
@@ -93,7 +89,7 @@ function PlaylistElo(props: { playlistId: string, songs: (MusicKit.Songs | Music
     }, [props.songs, props.ratings]);
 
     return <div>
-        {sortedSongs.map((song: Songs | MusicVideos) => {
+        {sortedSongs.map((song: MusicKit.Songs | MusicKit.MusicVideos) => {
             let rating = props.ratings[song.id] || 0;
             return <PlaylistSong key={song.id} song={song} rating={rating}/>
         })}
@@ -104,8 +100,8 @@ export function SongRating() {
 
     let params = useParams();
     let playlistId = params.id;
-    let [inputSongs, setInputSongs] = React.useState<(Songs | MusicVideos)[]>([]);
-    let [inputPlaylist, setInputPlaylist] = React.useState<Playlists | LibraryPlaylists | null>(null);
+    let [inputSongs, setInputSongs] = React.useState<(MusicKit.Songs | MusicKit.MusicVideos)[]>([]);
+    let [inputPlaylist, setInputPlaylist] = React.useState<MusicKit.Playlists | MusicKit.LibraryPlaylists | null>(null);
     let [matchUp, setMatchUp] = React.useState<RatingPair | null>(null);
 
     let [ratings, setRatings] = React.useState<{ [key: string]: number }>({});
@@ -128,10 +124,11 @@ export function SongRating() {
         if (!playlistId) {
             return;
         }
-        window.MusicKit.getInstance().api.library.playlist(playlistId, {
-            include: "tracks"
-        }).then(playlist => {
-            setInputPlaylist(playlist as any);
+        // @ts-ignore
+        window.MusicKit.getInstance().api.music('v1/me/library/playlists/' + playlistId, {
+            include: 'tracks',
+        }).then((playlist: any) => {
+            setInputPlaylist(playlist.data.data[0]);
         })
     }, [playlistId]);
 
@@ -141,7 +138,7 @@ export function SongRating() {
             return;
         }
 
-        const songs: (Songs | MusicVideos)[] = inputPlaylist?.relationships.tracks.data;
+        const songs: (MusicKit.Songs | MusicKit.MusicVideos)[] = inputPlaylist?.relationships.tracks.data;
 
         // get all tracks from the paginated API
         const getTracks = async (next: string) => {
@@ -199,7 +196,7 @@ export function SongRating() {
      *  Will choose two songs from the output playlist more often the bigger the output playlist is.
      *  Over time, the output playlist will be filled with more songs from the input playlist.
      */
-    function getCandidate(baseline?: Songs | MusicVideos): RatingPair | null {
+    function getCandidate(baseline?: MusicKit.Songs | MusicKit.MusicVideos): RatingPair | null {
 
         if (inputSongs.length === 0) {
             return null;
@@ -221,6 +218,7 @@ export function SongRating() {
 
     //TODO display a message that data is local in case of anonymous users with an option to sign up
 
+    // @ts-ignore
     return <div>
         <div id="playlist-header" className="flex items-center relative justify-between">
             <div className="w-2/6">

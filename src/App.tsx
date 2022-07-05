@@ -4,14 +4,6 @@ import firebase from "firebase/compat/app";
 import {AppHeader} from "./AppHeader";
 import {Outlet} from "react-router-dom";
 
-window.MusicKit.configure({
-    developerToken: process.env.REACT_APP_MUSIC_KIT_DEVELOPER_TOKEN,
-    app: {
-        name: 'Music Rating',
-        build: '0.1.0'
-    },
-});
-
 const firebaseConfig = {
     apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
     authDomain: "elo-music-rating.firebaseapp.com",
