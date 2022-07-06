@@ -39,7 +39,7 @@ export function AppHeader() {
                 className="w-full block flex-grow lg:flex lg:items-center lg:w-auto max-h-0 lg:max-h-screen transition-all motion-reduce:transition-none"
                 ref={menu}>
                 <div className="text-sm lg:flex-grow">
-                    <a href="/"
+                    <a href="/src/routes"
                        className="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-white mr-4 hidden">
                         Home
                     </a>

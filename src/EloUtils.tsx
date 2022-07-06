@@ -1,14 +1,12 @@
 /**
  * Gets the songs ELO rating from local storage
  */
-import Songs = MusicKit.Songs;
-import MusicVideos = MusicKit.MusicVideos;
 import firebase from "firebase/compat/app";
 import Unsubscribe = firebase.Unsubscribe;
 import "firebase/firestore";
 import {collection, doc, getDoc, getFirestore, onSnapshot, setDoc} from "firebase/firestore";
 
-export async function setEloRating(playlistId: string, song: Songs | MusicVideos, rating: number) {
+export async function setEloRating(playlistId: string, song: MusicKit.Songs | MusicKit.MusicVideos, rating: number) {
     let firebaseUid = firebase.auth().currentUser?.uid;
     if (!!firebaseUid) {
 
@@ -22,7 +20,7 @@ export async function setEloRating(playlistId: string, song: Songs | MusicVideos
     }
 }
 
-export async function getEloRating(playlistId: string, song: Songs | MusicVideos): Promise<number> {
+export async function getEloRating(playlistId: string, song: MusicKit.Songs | MusicKit.MusicVideos): Promise<number> {
     let firebaseUid = firebase.auth().currentUser?.uid;
     if (!!firebaseUid) {
 
@@ -47,7 +45,7 @@ export function getEloRatings(playlistId: string, callback: (ratings: { [songId:
             callback(ratings);
         });
     } else {
-        let keys = localStorage.keys().filter((key: string) => key.startsWith(playlistId + "/"));
+        let keys = Object.keys(localStorage).filter((key: string) => key.startsWith(playlistId + "/"));
         let songs = {} as { [key: string]: number };
         for (let key of keys) {
             songs[key.substring(playlistId.length + 1)] = parseInt(localStorage.getItem(key) || "0");
@@ -59,7 +57,7 @@ export function getEloRatings(playlistId: string, callback: (ratings: { [songId:
     }
 }
 
-export async function calculateElo(playlistId: string, baseline: Songs | MusicVideos, candidate: Songs | MusicVideos, winner: "baseline" | "candidate" | "tie") {
+export async function calculateElo(playlistId: string, baseline: MusicKit.Songs | MusicKit.MusicVideos, candidate: MusicKit.Songs | MusicKit.MusicVideos, winner: "baseline" | "candidate" | "tie") {
     const baselineRating = await getEloRating(playlistId, baseline);
     const candidateRating = await getEloRating(playlistId, candidate);
     const expectedBaseline = 1 / (1 + Math.pow(10, (candidateRating - baselineRating) / 400));

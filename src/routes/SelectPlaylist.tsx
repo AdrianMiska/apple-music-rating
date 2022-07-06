@@ -1,28 +1,28 @@
 import React, {useEffect} from "react";
 import {createPlaylist, updatePlaylist} from "../PlaylistUtils";
 import {useNavigate} from "react-router-dom";
-import Playlists = MusicKit.Playlists;
-import LibraryPlaylists = MusicKit.LibraryPlaylists;
-import Songs = MusicKit.Songs;
 
 
 export function SelectPlaylist() {
 
-    let [heavyRotation, setHeavyRotation] = React.useState<Playlists[]>([]);
+    let [heavyRotation, setHeavyRotation] = React.useState<MusicKit.Playlists[]>([]);
     let [searchTerm, setSearchTerm] = React.useState<string>("");
-    let [searchResults, setSearchResults] = React.useState<LibraryPlaylists[]>([]);
-    let [favorites, setFavorites] = React.useState<Playlists | null>(null);
+    let [searchResults, setSearchResults] = React.useState<MusicKit.LibraryPlaylists[]>([]);
+    let [favorites, setFavorites] = React.useState<MusicKit.Playlists | null>(null);
 
     useEffect(() => {
-        window.MusicKit.getInstance().api.historyHeavyRotation().then(response => {
-            setHeavyRotation(response as any);
+        // @ts-ignore
+        window.MusicKit.getInstance().api.music('v1/me/history/heavy-rotation').then((response: any) => {
+            setHeavyRotation(response.data.data);
         });
 
-        window.MusicKit.getInstance().api.library.search("Favorites", {
+        // @ts-ignore
+        window.MusicKit.getInstance().api.music('v1/me/library/search', {
+            term: "Favorites",
             types: "library-playlists",
             limit: "25"
-        }).then(response => {
-            let result = (response as any)["library-playlists"]?.data.filter((playlist: Playlists) => {
+        }).then((response: any) => {
+            let result = response.data.results["library-playlists"]?.data.filter((playlist: MusicKit.Playlists) => {
                 return playlist.attributes?.name === "Favorites" && playlist.attributes?.description?.standard.includes("Music Rating");
             });
             if (result.length > 0) {
@@ -46,27 +46,14 @@ export function SelectPlaylist() {
      * @param songs
      * @private
      */
-    async function getFavorites(songs: Songs[]): Promise<Songs[]> {
+    async function getFavorites(songs: MusicKit.Songs[]): Promise<MusicKit.Songs[]> {
 
-        // construct query string
-        let query = "ids=";
-        for (let song of songs) {
-            query += song.id + "%2C";
-        }
-        query = query.substring(0, query.length - 3);
-
-        let result = await fetch("https://api.music.apple.com/v1/me/ratings/library-songs?" + query, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + window.MusicKit.getInstance().developerToken,
-                "Music-User-Token": window.MusicKit.getInstance().musicUserToken
-            }
-        }).then(response => {
-            return response.json();
+        // @ts-ignore
+        let result = await window.MusicKit.getInstance().api.music("v1/me/ratings/library-songs", {
+            ids: songs.map((song: MusicKit.Songs) => song.id)
         });
 
-        return result.data
+        return result.data.data
             .filter((rating: any) => rating.attributes.value === 1)
             .map((rating: { id: string; }) => {
                 return songs.find(song => song.id === rating.id);
@@ -84,19 +71,20 @@ export function SelectPlaylist() {
         // due to Apple not allowing us to update playlists, we need to create a new playlist
         // to make things worse, deleting a playlist is also not allowed, so we will clutter the users libraries :(
 
-        //let favoritesPlaylist = this.state.favorites || await createPlaylist("Favorites", "Playlist of all your favorite songs. Created by Music Rating.");
+        //let favoritesPlaylist = this.state.favorites || await createPlaylist("Favorites", "Playlist of all your favorite songs. Created by Elo Music Rating.");
 
-        let favoritesPlaylist = await createPlaylist("Favorites", "Playlist of all your favorite songs. Created by Music Rating.");
+        let favoritesPlaylist = await createPlaylist("Favorites", "Playlist of all your favorite songs. Created by Elo Music Rating.");
 
         let offset = 0;
         let limit = 100;
-        let favorites: Songs[] = [];
+        let favorites: MusicKit.Songs[] = [];
 
         while (true) {
-            let songs = await window.MusicKit.getInstance().api.library.songs(null, {
+            // @ts-ignore
+            let {data: {data: songs}} = (await window.MusicKit.getInstance().api.music("v1/me/library/songs", {
                 limit: limit,
                 offset: offset
-            });
+            }));
             favorites = favorites.concat(await getFavorites(songs));
             offset += limit;
 
