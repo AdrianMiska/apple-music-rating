@@ -71,9 +71,9 @@ export function SelectPlaylist() {
         // due to Apple not allowing us to update playlists, we need to create a new playlist
         // to make things worse, deleting a playlist is also not allowed, so we will clutter the users libraries :(
 
-        //let favoritesPlaylist = this.state.favorites || await createPlaylist("Favorites", "Playlist of all your favorite songs. Created by Music Rating.");
+        //let favoritesPlaylist = this.state.favorites || await createPlaylist("Favorites", "Playlist of all your favorite songs. Created by Elo Music Rating.");
 
-        let favoritesPlaylist = await createPlaylist("Favorites", "Playlist of all your favorite songs. Created by Music Rating.");
+        let favoritesPlaylist = await createPlaylist("Favorites", "Playlist of all your favorite songs. Created by Elo Music Rating.");
 
         let offset = 0;
         let limit = 100;

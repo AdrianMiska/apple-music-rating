@@ -1,99 +1,14 @@
 import React, {useEffect} from "react";
 import {createPlaylist, updatePlaylist} from "../PlaylistUtils";
 import {calculateElo, getEloRatings} from "../EloUtils";
-import {Song} from "../Song";
-import {useNavigate, useParams} from "react-router-dom";
-import {ChevronLeftIcon, PlusIcon} from "@heroicons/react/outline";
+import {Song} from "../components/Song";
+import {useParams} from "react-router-dom";
+import {PlaylistElo} from "../components/PlaylistElo";
+import {SongRatingHeader} from "../components/SongRatingHeader";
 
 class RatingPair {
     constructor(public baseline: MusicKit.Songs | MusicKit.MusicVideos, public candidate: MusicKit.Songs | MusicKit.MusicVideos) {
     }
-}
-
-/**
- * A song to be displayed as part of a playlist.
- */
-function PlaylistSong(props: { song: MusicKit.Songs | MusicKit.MusicVideos, rating: number }) {
-
-    function getArtworkUrl() {
-        let artwork = props.song.attributes?.artwork;
-        let height = artwork?.height;
-        let width = artwork?.width;
-        return artwork && height && width
-            ? window.MusicKit.formatArtworkURL(artwork, height, width)
-            : "";
-    }
-
-    return <div className="flex flex-row items-center mb-2">
-        <div className="w-1/6 px-2">
-            <img src={getArtworkUrl()} className="rounded max-h-12" alt={`${props.song.attributes?.name} album art`}/>
-        </div>
-        <div className="w-4/6">
-            <div className="flex flex-col">
-                <div className="flex flex-row items-center">
-                    <div className="w-1/3">
-                        <div className="text-sm">
-                            {props.song.attributes?.name}
-                        </div>
-                    </div>
-                    <div className="w-2/3">
-                        <div className="text-sm">
-                            {props.song.attributes?.albumName}
-                        </div>
-                    </div>
-                </div>
-                <div className="flex flex-row items-center">
-                    <div className="w-1/3">
-                        <div className="text-sm">
-
-                            {props.song.attributes?.artistName}
-                        </div>
-                    </div>
-                    <div className="w-2/3">
-                        <div className="text-sm">
-                            {props.song.attributes?.genreNames.join(", ")}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div className="w-1/6">
-            <div className="flex flex-col">
-                <div className="flex flex-row items-center">
-                    <div className="w-full">
-                        <div className="text-sm">
-                            Elo: {props.rating.toFixed(1)}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </div>;
-}
-
-/**
- * This component will display the songs in a playlist along with their ratings.
- */
-function PlaylistElo(props: { playlistId: string, songs: (MusicKit.Songs | MusicKit.MusicVideos)[], ratings: { [key: string]: number } }) {
-
-    let [sortedSongs, setSortedSongs] = React.useState<(MusicKit.Songs | MusicKit.MusicVideos)[]>([]);
-
-    useEffect(() => {
-        let sorted = props.songs.sort((a, b) => {
-            let aRating = props.ratings[a.id] || 0;
-            let bRating = props.ratings[b.id] || 0;
-            return bRating - aRating;
-        });
-        setSortedSongs(sorted);
-    }, [props.songs, props.ratings]);
-
-    return <div>
-        {sortedSongs.map((song: MusicKit.Songs | MusicKit.MusicVideos) => {
-            let rating = props.ratings[song.id] || 0;
-            return <PlaylistSong key={song.id} song={song} rating={rating}/>
-        })}
-    </div>;
 }
 
 export function SongRating() {
@@ -165,7 +80,8 @@ export function SongRating() {
             setInputSongs(songs);
         }
 
-    }, [inputPlaylist]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [inputPlaylist?.id]);
 
     useEffect(() => {
         console.log("inputSongs", inputSongs);
@@ -175,7 +91,7 @@ export function SongRating() {
 
 
     async function createOutputPlaylist(name: string | undefined) {
-        let createdPlaylist = await createPlaylist(`${name} Sorted`, `Sorted version of ${name} by Music Rating`);
+        let createdPlaylist = await createPlaylist(`${name} Sorted`, `Sorted version of ${name} by Elo Music Rating`);
         let sorted = inputSongs.sort((a, b) => {
             let aRating = ratings[a.id];
             let bRating = ratings[b.id];
@@ -210,50 +126,24 @@ export function SongRating() {
         return new RatingPair(baseline, candidate);
     }
 
-    let navigate = useNavigate();
-
     if (!playlistId || !inputSongs.length || !matchUp) {
         return <div>Loading...</div>;
     }
 
     //TODO display a message that data is local in case of anonymous users with an option to sign up
 
-    // @ts-ignore
     return <div>
-        <div id="playlist-header" className="flex items-center relative justify-between">
-            <div className="w-2/6">
-
-                <button
-                    className="flex items-center bg-transparent hover:bg-gray-200 text-gray-800 font-semibold hover:text-gray-900 py-2 pr-4 rounded"
-                    onClick={() => {
-                        navigate("/select-playlist");
-                    }}>
-                    <ChevronLeftIcon className="w-6 h-6 mr-2"/> Back
-                </button>
-            </div>
-            <div className="items-center w-2/6 justify-center">
-                <h1 className="text-2xl font-bold">
-                    {inputPlaylist?.attributes?.name}
-                </h1>
-            </div>
-            <div className="w-1/3">
-                <button
-                    className="flex items-center bg-transparent hover:bg-gray-200 text-gray-800 font-semibold hover:text-gray-900 py-2 pl-4 rounded"
-                    onClick={async () => {
-                        await createOutputPlaylist(inputPlaylist?.attributes?.name);
-                    }}>
-                    <PlusIcon className="w-6 h-6 mr-2"/> Create sorted Playlist
-                </button>
-            </div>
-
-
-        </div>
+        <SongRatingHeader inputPlaylist={inputPlaylist}
+                          onSave={async () => {
+                              await createOutputPlaylist(inputPlaylist?.attributes?.name);
+                          }}/>
         <div className="flex flex-row my-2">
-            <div className="flex flex-col w-full">
+            <div className="flex flex-col w-full items-center">
                 <Song song={matchUp.baseline} playlistId={playlistId}/>
                 <button className="bg-slate-500 hover:bg-slate-700
-                    text-white font-bold py-2 px-4 rounded"
+                    text-white font-bold py-2 px-4 rounded w-fit"
                         onClick={async () => {
+                            await window.MusicKit.getInstance().stop()
                             await calculateElo(playlistId!, matchUp!.baseline, matchUp!.candidate, "baseline");
                             setMatchUp(getCandidate());
                         }
@@ -262,18 +152,21 @@ export function SongRating() {
             </div>
             <div className="flex flex-col justify-center">
                 <button className="bg-slate-500 hover:bg-slate-700
-                    text-white font-bold py-2 px-4 rounded"
+                    text-white font-bold py-2 px-4 rounded w-fit"
                         onClick={async () => {
+                            await window.MusicKit.getInstance().stop()
                             await calculateElo(playlistId!, matchUp!.baseline, matchUp!.candidate, "tie");
                             setMatchUp(getCandidate());
                         }}>Tie
                 </button>
             </div>
-            <div className="flex flex-col w-full">
+            <div className="flex flex-col w-full items-center">
                 <Song song={matchUp.candidate} playlistId={playlistId}/>
                 <button className="bg-slate-500 hover:bg-slate-700
-                    text-white font-bold py-2 px-4 rounded"
+                    text-white font-bold py-2 px-4 rounded w-fit"
                         onClick={async () => {
+                            //TODO don't stop if the candidate is currently playing
+                            await window.MusicKit.getInstance().stop()
                             await calculateElo(playlistId!, matchUp!.baseline, matchUp!.candidate, "candidate");
                             setMatchUp(getCandidate(matchUp!.candidate)); // keep candidate as incumbent baseline
                         }

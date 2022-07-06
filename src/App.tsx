@@ -1,7 +1,6 @@
 import React from 'react';
-import './App.css';
 import firebase from "firebase/compat/app";
-import {AppHeader} from "./AppHeader";
+import {AppHeader} from "./components/AppHeader";
 import {Outlet} from "react-router-dom";
 
 const firebaseConfig = {
@@ -17,7 +16,7 @@ firebase.initializeApp(firebaseConfig);
 
 export default function App() {
 
-    return <div className="App">
+    return <div className="text-center">
         <AppHeader/>
         <Outlet/>
     </div>
