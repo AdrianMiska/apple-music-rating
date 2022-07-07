@@ -8,8 +8,13 @@ const artworkStyleOverride = `
 
 .artwork--container picture {
   align-items: unset !important;
+  width: \${size}rem !important;
+  height: \${size}rem !important;
 }`;
 
+/**
+ * Displays album art with an optional play button overlayed on top.
+ */
 export function Artwork(props: { artwork: MusicKit.Artwork | null, size: number }) {
 
     let ref = useRef<HTMLElement>();

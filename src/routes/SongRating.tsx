@@ -1,10 +1,12 @@
 import React, {useEffect} from "react";
-import {createPlaylist, updatePlaylist} from "../PlaylistUtils";
+import {createPlaylist, isPlaying, updatePlaylist} from "../PlaylistUtils";
 import {calculateElo, getEloRatings} from "../EloUtils";
 import {Song} from "../components/Song";
 import {useParams} from "react-router-dom";
 import {PlaylistElo} from "../components/PlaylistElo";
 import {SongRatingHeader} from "../components/SongRatingHeader";
+import {HeartIcon} from "@heroicons/react/solid";
+import {PlayButton} from "../components/PlayButton";
 
 class RatingPair {
     constructor(public baseline: MusicKit.Songs | MusicKit.MusicVideos, public candidate: MusicKit.Songs | MusicKit.MusicVideos) {
@@ -137,41 +139,53 @@ export function SongRating() {
                           onSave={async () => {
                               await createOutputPlaylist(inputPlaylist?.attributes?.name);
                           }}/>
+        <div className="grid grid-cols-2 my-2">
+            <Song song={matchUp.baseline} playlistId={playlistId}/>
+            <Song song={matchUp.candidate} playlistId={playlistId}/>
+        </div>
         <div className="flex flex-row my-2">
             <div className="flex flex-col w-full items-center">
-                <Song song={matchUp.baseline} playlistId={playlistId}/>
-                <button className="bg-slate-500 hover:bg-slate-700
-                    text-white font-bold py-2 px-4 rounded w-fit"
+                <div className="flex flex-row items-center">
+                    <button
+                        className="bg-gray-500 border-0 text-white hover:bg-gray-700 rounded-full h-10 w-10 p-2"
                         onClick={async () => {
                             await window.MusicKit.getInstance().stop()
                             await calculateElo(playlistId!, matchUp!.baseline, matchUp!.candidate, "baseline");
                             setMatchUp(getCandidate());
                         }
-                        }>I prefer this song
-                </button>
+                        }>
+                        <HeartIcon/>
+                    </button>
+                    <PlayButton song={matchUp.baseline}/>
+                </div>
             </div>
             <div className="flex flex-col justify-center">
-                <button className="bg-slate-500 hover:bg-slate-700
-                    text-white font-bold py-2 px-4 rounded w-fit"
-                        onClick={async () => {
-                            await window.MusicKit.getInstance().stop()
-                            await calculateElo(playlistId!, matchUp!.baseline, matchUp!.candidate, "tie");
-                            setMatchUp(getCandidate());
-                        }}>Tie
+                <button
+                    className="bg-gray-500 border-0 text-white hover:bg-gray-700 rounded-full h-10 w-10 p-2 font-bold"
+                    onClick={async () => {
+                        await window.MusicKit.getInstance().stop()
+                        await calculateElo(playlistId!, matchUp!.baseline, matchUp!.candidate, "tie");
+                        setMatchUp(getCandidate());
+                    }}>Tie
                 </button>
             </div>
             <div className="flex flex-col w-full items-center">
-                <Song song={matchUp.candidate} playlistId={playlistId}/>
-                <button className="bg-slate-500 hover:bg-slate-700
-                    text-white font-bold py-2 px-4 rounded w-fit"
+                <div className="flex flex-row items-center">
+                    <PlayButton song={matchUp.candidate}/>
+                    <button
+                        className="bg-gray-500 border-0 text-white hover:bg-gray-700 rounded-full h-10 w-10 p-2"
                         onClick={async () => {
-                            //TODO don't stop if the candidate is currently playing
-                            await window.MusicKit.getInstance().stop()
+                            //don't stop if the candidate is currently playing
+                            if (!(matchUp && isPlaying(matchUp.candidate))) {
+                                await window.MusicKit.getInstance().stop()
+                            }
                             await calculateElo(playlistId!, matchUp!.baseline, matchUp!.candidate, "candidate");
                             setMatchUp(getCandidate(matchUp!.candidate)); // keep candidate as incumbent baseline
                         }
-                        }>I prefer this song
-                </button>
+                        }>
+                        <HeartIcon/>
+                    </button>
+                </div>
             </div>
         </div>
         <div className="flex flex-row justify-center">

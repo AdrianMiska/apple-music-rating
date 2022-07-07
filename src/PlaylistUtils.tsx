@@ -39,3 +39,9 @@ export function updatePlaylist(playlist: MusicKit.LibraryPlaylists | MusicKit.Pl
         })
     });
 }
+
+export function isPlaying(song: MusicKit.Songs | MusicKit.MusicVideos): boolean {
+    let music = window.MusicKit.getInstance();
+    // @ts-ignore
+    return music.isPlaying && (music.nowPlayingItem?.container.id === song.id || music.nowPlayingItem?.container.id === song.attributes?.playParams?.catalogId);
+}

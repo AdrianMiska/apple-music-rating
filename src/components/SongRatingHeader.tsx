@@ -9,7 +9,10 @@ export function SongRatingHeader(props: { inputPlaylist: MusicKit.Playlists | Mu
 
             <button
                 className="flex items-center bg-transparent hover:bg-gray-200 text-gray-800 font-semibold hover:text-gray-900 py-2 pr-4 rounded"
-                onClick={() => navigate("/select-playlist")}>
+                onClick={async () => {
+                    navigate("/select-playlist");
+                    await window.MusicKit.getInstance().stop();
+                }}>
                 <ChevronLeftIcon className="w-6 h-6 mr-2"/> Back
             </button>
         </div>
@@ -20,9 +23,9 @@ export function SongRatingHeader(props: { inputPlaylist: MusicKit.Playlists | Mu
         </div>
         <div className="w-1/3">
             <button
-                className="ml-auto flex items-center bg-transparent hover:bg-gray-200 text-gray-800 font-semibold hover:text-gray-900 py-2 pl-4 rounded"
+                className="ml-auto flex items-center bg-transparent hover:bg-gray-200 text-gray-800 font-semibold hover:text-gray-900 py-2 pl-4 pr-2 rounded"
                 onClick={props.onSave}>
-                <PlusIcon className="w-6 h-6 mr-2"/> Create sorted Playlist
+                <PlusIcon className="w-4 h-4 mr-2"/> Save
             </button>
         </div>
 
