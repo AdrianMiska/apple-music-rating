@@ -10,6 +10,7 @@ import {SelectPlaylist} from "./routes/SelectPlaylist";
 import {Authorize} from "./routes/Authorize";
 import {RequireAuthentication} from "./RequireAuthentication";
 import {RequireAuthorization} from "./RequireAuthorization";
+import {LandingPage} from "./routes/LandingPage";
 
 // noinspection SpellCheckingInspection
 document.addEventListener('musickitloaded', async function () {
@@ -30,6 +31,7 @@ document.addEventListener('musickitloaded', async function () {
             <BrowserRouter>
                 <Routes>
                     <Route path="/" element={<App/>}>
+                        <Route index element={<LandingPage/>}/>
                         <Route path="/login" element={<Login/>}/>
                         <Route path="/authorize" element={
                             <RequireAuthentication>

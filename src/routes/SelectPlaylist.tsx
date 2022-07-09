@@ -2,6 +2,24 @@ import React, {useEffect} from "react";
 import {createPlaylist, updatePlaylist} from "../PlaylistUtils";
 import {useNavigate} from "react-router-dom";
 
+/**
+ * A clickable tile which represents a playlist. It has a nice hover effect and clicking the tile itself will take you to the song-rating page.
+ * @param props
+ * @constructor
+ */
+function PlaylistTile(props: { playlist: MusicKit.Playlists | MusicKit.LibraryPlaylists, onClick: () => void }) {
+    return <div className="w-1/2 md:w-1/3 lg:w-1/4 my-2">
+        <div className="flex m-2 p-3 h-full cursor-pointer bg-white rounded-lg shadow-lg hover:bg-gray-100 hover:shadow-md justify-center"
+             onClick={props.onClick}>
+
+            <span className="font-bold text-xl my-auto">
+                {props.playlist.attributes?.name}
+            </span>
+
+        </div>
+
+    </div>;
+}
 
 export function SelectPlaylist() {
 
@@ -22,24 +40,40 @@ export function SelectPlaylist() {
             types: "library-playlists",
             limit: "25"
         }).then((response: any) => {
-            let result = response.data.results["library-playlists"]?.data.filter((playlist: MusicKit.Playlists) => {
+            let result = response.data.results["library-playlists"]?.data.filter((playlist: MusicKit.LibraryPlaylists) => {
                 return playlist.attributes?.name === "Favorites" && playlist.attributes?.description?.standard.includes("Music Rating");
             });
             if (result.length > 0) {
-                setFavorites(result[0]);
+                //use the latest one
+                setFavorites(result.sort((a: MusicKit.LibraryPlaylists, b: MusicKit.LibraryPlaylists) => {
+                    let stringAddedA = b.attributes?.dateAdded;
+                    let stringAddedB = a.attributes?.dateAdded;
+                    if (!stringAddedA) {
+                        return -1;
+                    }
+                    if (!stringAddedB) {
+                        return 1;
+                    }
+                    return new Date(stringAddedB).getTime() - new Date(stringAddedA).getTime();
+                })[0]);
             }
         });
     }, []);
 
-    function search(term: string) {
-        if (!term) {
-            setSearchResults([]);
-            return;
+    useEffect(() => {
+        //replace special characters in search term
+        let effectiveSearchTerm = searchTerm.trim().replace(/[^a-zA-Z\d]/g, "*");
+        if (effectiveSearchTerm.length > 0) {
+            // @ts-ignore
+            window.MusicKit.getInstance().api.music('v1/me/library/search', {
+                term: effectiveSearchTerm,
+                types: "library-playlists",
+                limit: "25"
+            }).then((response: any) => {
+                setSearchResults(response.data.results["library-playlists"]?.data);
+            });
         }
-        window.MusicKit.getInstance().api.library.search(term, {types: "playlists", limit: "25"}).then(response => {
-            setSearchResults((response as any)["library-playlists"]?.data);
-        });
-    }
+    }, [searchTerm]);
 
     /**
      * Will filter the songs from the response and return only the ones with a favorite rating.
@@ -101,7 +135,7 @@ export function SelectPlaylist() {
 
     return <div>
         <span>Use all the songs you marked as favorite:</span>
-        <div>
+        <div className="mb-4">
             {favorites
                 ? <div>
                     <button className="bg-slate-500 hover:bg-slate-700
@@ -123,36 +157,28 @@ export function SelectPlaylist() {
                 </button>
             }
         </div>
-        <span>Or select a playlist you frequently listened to:</span>
-        {heavyRotation
-            .sort((a, b) => a.attributes && b.attributes ? a.attributes.name.localeCompare(b.attributes.name) : 0)
-            .map(playlist => {
-                return <div key={"heavy-rotation-" + playlist.id}>
-                    <button className="bg-slate-500 hover:bg-slate-700
-                    text-white font-bold py-2 px-4 rounded"
-                            onClick={() => navigate("/song-rating/" + playlist.id)}>
-                        {playlist.attributes?.name}
-                    </button>
-                </div>;
+        <p>Or select a playlist you frequently listened to:</p>
+        <div className="flex flex-wrap mb-4">
+            {heavyRotation.map((playlist: MusicKit.Playlists) => {
+                return <PlaylistTile playlist={playlist} onClick={() => {
+                    navigate(`/song-rating/${playlist.id}`);
+                }}/>
             })}
-        <span>Or search for a playlist:</span>
+        </div>
+        <p>Or search for a playlist:</p>
         <input type="text"
                placeholder="Search"
-               className={"bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-slate-500"}
+               className="bg-gray-200 appearance-none border-2 border-gray-200 rounded-full
+               w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-700 max-w-sm"
                value={searchTerm}
                onChange={e => {
                    setSearchTerm(e.target.value);
-                   search(e.target.value);
                }}/>
-        <div>
+        <div className="flex flex-wrap">
             {searchResults?.map(playlist => {
-                return <div key={"search-" + playlist.id}>
-                    <button className="bg-slate-500 hover:bg-slate-700
-                        text-white font-bold py-2 px-4 rounded"
-                            onClick={() => navigate("/song-rating/" + playlist.id)}>
-                        {playlist.attributes?.name}
-                    </button>
-                </div>;
+                return <PlaylistTile playlist={playlist} onClick={() => {
+                    navigate(`/song-rating/${playlist.id}`);
+                }}/>
             })}
         </div>
 
