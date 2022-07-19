@@ -1,6 +1,7 @@
 import {useNavigate} from "react-router-dom";
 import {ChevronLeftIcon, PlusIcon} from "@heroicons/react/outline";
 import React from "react";
+import {MusicWrapper} from "../MusicWrapper";
 
 export function SongRatingHeader(props: { inputPlaylist: MusicKit.Playlists | MusicKit.LibraryPlaylists | null, onSave: () => Promise<void> }) {
     let navigate = useNavigate();
@@ -11,7 +12,7 @@ export function SongRatingHeader(props: { inputPlaylist: MusicKit.Playlists | Mu
                 className="flex items-center bg-transparent hover:bg-gray-200 text-gray-800 font-semibold hover:text-gray-900 py-2 pr-4 rounded"
                 onClick={async () => {
                     navigate("/select-playlist");
-                    await window.MusicKit.getInstance().stop();
+                    await MusicWrapper.getInstance().stop();
                 }}>
                 <ChevronLeftIcon className="w-6 h-6 mr-2"/> Back
             </button>

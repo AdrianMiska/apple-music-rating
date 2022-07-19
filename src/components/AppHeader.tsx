@@ -39,7 +39,7 @@ export function AppHeader() {
                 className="w-full block flex-grow lg:flex lg:items-center lg:w-auto max-h-0 lg:max-h-screen transition-all motion-reduce:transition-none"
                 ref={menu}>
                 <div className="text-sm lg:flex-grow">
-                    <a href="/src/routes"
+                    <a href="/"
                        className="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-white mr-4 hidden">
                         Home
                     </a>
@@ -50,7 +50,7 @@ export function AppHeader() {
                         <button className="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white
                             hover:border-transparent hover:text-white hover:bg-blue-600 mt-4 lg:mt-0"
                                 onClick={() => {
-                                    navigate("/login");
+                                    navigate("/login", {state: {from: window.location.pathname}});
                                 }}>
                             Create Account
                         </button>
@@ -61,7 +61,7 @@ export function AppHeader() {
                             hover:border-transparent hover:text-white hover:bg-blue-600 mt-4 lg:mt-0"
                                 onClick={async () => {
                                     await firebase.auth().signOut();
-                                    navigate("/login");
+                                    navigate("/login", {state: {from: window.location.pathname}});
                                 }}>
                             Logout
                         </button>

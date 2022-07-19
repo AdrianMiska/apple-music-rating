@@ -1,10 +1,14 @@
-export function createPlaylist(name: string, description: string) {
-    return fetch('https://api.music.apple.com/v1/me/library/playlists', {
+import {MusicWrapper} from "./MusicWrapper";
+
+export async function createPlaylist(name: string, description: string) {
+    let musicKit = await MusicWrapper.getInstance().getMusicKit();
+
+    const response = await fetch('https://api.music.apple.com/v1/me/library/playlists', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + window.MusicKit.getInstance().developerToken,
-            'Music-User-Token': window.MusicKit.getInstance().musicUserToken
+            'Authorization': 'Bearer ' + musicKit.developerToken,
+            'Music-User-Token': musicKit.musicUserToken
         },
         body: JSON.stringify({
             attributes: {
@@ -13,20 +17,20 @@ export function createPlaylist(name: string, description: string) {
                 public: false
             }
         })
-    }).then(response => {
-        return response.json();
-    }).then(response => {
-        return response.data[0];
     });
+    const response_1 = await response.json();
+    return response_1.data[0];
 }
 
-export function updatePlaylist(playlist: MusicKit.LibraryPlaylists | MusicKit.Playlists, songs: (MusicKit.MusicVideos | MusicKit.Songs)[]) {
+export async function updatePlaylist(playlist: MusicKit.LibraryPlaylists | MusicKit.Playlists, songs: (MusicKit.MusicVideos | MusicKit.Songs)[]): Promise<Response> {
+    let musicKit = await MusicWrapper.getInstance().getMusicKit();
+
     return fetch(`https://api.music.apple.com/v1/me/library/playlists/${playlist.id}/tracks`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + window.MusicKit.getInstance().developerToken,
-            'Music-User-Token': window.MusicKit.getInstance().musicUserToken
+            'Authorization': 'Bearer ' + musicKit.developerToken,
+            'Music-User-Token': musicKit.musicUserToken
         },
         body: JSON.stringify({
             data: songs.map((songs) => {
@@ -38,10 +42,4 @@ export function updatePlaylist(playlist: MusicKit.LibraryPlaylists | MusicKit.Pl
             )
         })
     });
-}
-
-export function isPlaying(song: MusicKit.Songs | MusicKit.MusicVideos): boolean {
-    let music = window.MusicKit.getInstance();
-    // @ts-ignore
-    return music.isPlaying && (music.nowPlayingItem?.container.id === song.id || music.nowPlayingItem?.container.id === song.attributes?.playParams?.catalogId);
 }

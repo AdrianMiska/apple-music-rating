@@ -1,5 +1,5 @@
 import React, {useEffect} from "react";
-import {createPlaylist, isPlaying, updatePlaylist} from "../PlaylistUtils";
+import {createPlaylist, updatePlaylist} from "../PlaylistUtils";
 import {calculateElo, getEloRatings} from "../EloUtils";
 import {Song} from "../components/Song";
 import {useParams} from "react-router-dom";
@@ -7,6 +7,7 @@ import {PlaylistElo} from "../components/PlaylistElo";
 import {SongRatingHeader} from "../components/SongRatingHeader";
 import {HeartIcon} from "@heroicons/react/solid";
 import {PlayButton} from "../components/PlayButton";
+import {MusicWrapper} from "../MusicWrapper";
 
 class RatingPair {
     constructor(public baseline: MusicKit.Songs | MusicKit.MusicVideos, public candidate: MusicKit.Songs | MusicKit.MusicVideos) {
@@ -41,9 +42,11 @@ export function SongRating() {
         if (!playlistId) {
             return;
         }
-        // @ts-ignore
-        window.MusicKit.getInstance().api.music('v1/me/library/playlists/' + playlistId, {
-            include: 'tracks',
+        MusicWrapper.getInstance().getMusicKit().then((music) => {
+            // @ts-ignore
+            return music.api.music('v1/me/library/playlists/' + playlistId, {
+                include: 'tracks',
+            })
         }).then((playlist: any) => {
             setInputPlaylist(playlist.data.data[0]);
         })
@@ -59,12 +62,13 @@ export function SongRating() {
 
         // get all tracks from the paginated API
         const getTracks = async (next: string) => {
+            let music = await MusicWrapper.getInstance().getMusicKit();
             const response = await fetch(`https://api.music.apple.com${next}`, {
                 method: "GET",
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + window.MusicKit.getInstance().developerToken,
-                    'Music-User-Token': window.MusicKit.getInstance().musicUserToken
+                    'Authorization': 'Bearer ' + music.developerToken,
+                    'Music-User-Token': music.musicUserToken
                 }
             });
             const data = await response.json();
@@ -149,21 +153,21 @@ export function SongRating() {
                     <button
                         className="bg-gray-500 border-0 text-white hover:bg-gray-700 rounded-full h-10 w-10 p-2"
                         onClick={async () => {
-                            await window.MusicKit.getInstance().stop()
+                            await MusicWrapper.getInstance().stop();
                             await calculateElo(playlistId!, matchUp!.baseline, matchUp!.candidate, "baseline");
                             setMatchUp(getCandidate());
                         }
                         }>
                         <HeartIcon/>
                     </button>
-                    <PlayButton song={matchUp.baseline}/>
+                    <PlayButton song={new MusicWrapper.Song(matchUp.baseline)}/>
                 </div>
             </div>
             <div className="flex flex-col justify-center">
                 <button
                     className="bg-gray-500 border-0 text-white hover:bg-gray-700 rounded-full h-10 w-10 p-2 font-bold"
                     onClick={async () => {
-                        await window.MusicKit.getInstance().stop()
+                        await MusicWrapper.getInstance().stop();
                         await calculateElo(playlistId!, matchUp!.baseline, matchUp!.candidate, "tie");
                         setMatchUp(getCandidate());
                     }}>Tie
@@ -171,13 +175,15 @@ export function SongRating() {
             </div>
             <div className="flex flex-col w-full items-center">
                 <div className="flex flex-row items-center">
-                    <PlayButton song={matchUp.candidate}/>
+                    <PlayButton song={new MusicWrapper.Song(matchUp.candidate)}/>
                     <button
                         className="bg-gray-500 border-0 text-white hover:bg-gray-700 rounded-full h-10 w-10 p-2"
                         onClick={async () => {
+
+                            let playing = await MusicWrapper.getInstance().isPlaying(matchUp ? new MusicWrapper.Song(matchUp?.candidate) : null)
                             //don't stop if the candidate is currently playing
-                            if (!(matchUp && isPlaying(matchUp.candidate))) {
-                                await window.MusicKit.getInstance().stop()
+                            if (!playing) {
+                                (await MusicWrapper.getInstance().getMusicKit()).stop()
                             }
                             await calculateElo(playlistId!, matchUp!.baseline, matchUp!.candidate, "candidate");
                             setMatchUp(getCandidate(matchUp!.candidate)); // keep candidate as incumbent baseline

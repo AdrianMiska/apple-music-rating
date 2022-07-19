@@ -1,6 +1,7 @@
 import React, {useEffect} from "react";
 import {createPlaylist, updatePlaylist} from "../PlaylistUtils";
 import {useNavigate} from "react-router-dom";
+import {MusicWrapper} from "../MusicWrapper";
 
 /**
  * A clickable tile which represents a playlist. It has a nice hover effect and clicking the tile itself will take you to the song-rating page.
@@ -9,8 +10,9 @@ import {useNavigate} from "react-router-dom";
  */
 function PlaylistTile(props: { playlist: MusicKit.Playlists | MusicKit.LibraryPlaylists, onClick: () => void }) {
     return <div className="w-1/2 md:w-1/3 lg:w-1/4 my-2">
-        <div className="flex m-2 p-3 h-full cursor-pointer bg-white rounded-lg shadow-lg hover:bg-gray-100 hover:shadow-md justify-center"
-             onClick={props.onClick}>
+        <div
+            className="flex m-2 p-3 h-full cursor-pointer bg-white rounded-lg shadow-lg hover:bg-gray-100 hover:shadow-md justify-center"
+            onClick={props.onClick}>
 
             <span className="font-bold text-xl my-auto">
                 {props.playlist.attributes?.name}
@@ -30,15 +32,21 @@ export function SelectPlaylist() {
 
     useEffect(() => {
         // @ts-ignore
-        window.MusicKit.getInstance().api.music('v1/me/history/heavy-rotation').then((response: any) => {
-            setHeavyRotation(response.data.data);
+        MusicWrapper.getInstance().getMusicKit().then((music) => {
+            // @ts-ignore
+            return music.api.music('v1/me/history/heavy-rotation').then((response: any) => {
+                setHeavyRotation(response.data.data);
+            });
         });
 
         // @ts-ignore
-        window.MusicKit.getInstance().api.music('v1/me/library/search', {
-            term: "Favorites",
-            types: "library-playlists",
-            limit: "25"
+        MusicWrapper.getInstance().getMusicKit().then((music) => {
+            // @ts-ignore
+            return music.api.music('v1/me/library/search', {
+                term: "Favorites",
+                types: "library-playlists",
+                limit: "25"
+            })
         }).then((response: any) => {
             let result = response.data.results["library-playlists"]?.data.filter((playlist: MusicKit.LibraryPlaylists) => {
                 return playlist.attributes?.name === "Favorites" && playlist.attributes?.description?.standard.includes("Music Rating");
@@ -65,10 +73,13 @@ export function SelectPlaylist() {
         let effectiveSearchTerm = searchTerm.trim().replace(/[^a-zA-Z\d]/g, "*");
         if (effectiveSearchTerm.length > 0) {
             // @ts-ignore
-            window.MusicKit.getInstance().api.music('v1/me/library/search', {
-                term: effectiveSearchTerm,
-                types: "library-playlists",
-                limit: "25"
+            MusicWrapper.getInstance().getMusicKit().then((music) => {
+                // @ts-ignore
+                return music.api.music('v1/me/library/search', {
+                    term: effectiveSearchTerm,
+                    types: "library-playlists",
+                    limit: "25"
+                })
             }).then((response: any) => {
                 setSearchResults(response.data.results["library-playlists"]?.data);
             });
@@ -82,8 +93,11 @@ export function SelectPlaylist() {
      */
     async function getFavorites(songs: MusicKit.Songs[]): Promise<MusicKit.Songs[]> {
 
+        let musicKit = await MusicWrapper.getInstance().getMusicKit();
+
+
         // @ts-ignore
-        let result = await window.MusicKit.getInstance().api.music("v1/me/ratings/library-songs", {
+        let result = musicKit.api.music("v1/me/ratings/library-songs", {
             ids: songs.map((song: MusicKit.Songs) => song.id)
         });
 
@@ -102,6 +116,8 @@ export function SelectPlaylist() {
      */
     async function createOrUpdateFavorites() {
 
+        let musicKit = await MusicWrapper.getInstance().getMusicKit();
+
         // due to Apple not allowing us to update playlists, we need to create a new playlist
         // to make things worse, deleting a playlist is also not allowed, so we will clutter the users libraries :(
 
@@ -115,7 +131,7 @@ export function SelectPlaylist() {
 
         while (true) {
             // @ts-ignore
-            let {data: {data: songs}} = (await window.MusicKit.getInstance().api.music("v1/me/library/songs", {
+            let {data: {data: songs}} = (await musicKit.api.music("v1/me/library/songs", {
                 limit: limit,
                 offset: offset
             }));

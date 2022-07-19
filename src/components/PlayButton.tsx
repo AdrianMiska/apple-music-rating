@@ -1,41 +1,32 @@
 import React, {useEffect} from "react";
 import {PlayIcon, StopIcon} from "@heroicons/react/solid";
-
-import {isPlaying as songIsPlaying} from "../PlaylistUtils";
+import {MusicWrapper} from "../MusicWrapper";
 
 /**
  * A nice-looking, round button which when clicked will play a preview of the song. If the song is already playing, it will stop.
  */
-export function PlayButton(props: { song: MusicKit.Songs | MusicKit.MusicVideos }) {
+export function PlayButton(props: { song: MusicWrapper.Song }) {
 
     let [isPlaying, setIsPlaying] = React.useState<boolean>(false);
 
-    let music = window.MusicKit.getInstance();
+    let music = MusicWrapper.getInstance();
 
-
-    music.addEventListener("playbackStateDidChange", () => {
-        setIsPlaying(songIsPlaying(props.song));
+    music.onPlaybackChange(() => {
+        music.isPlaying(props.song).then(setIsPlaying);
     });
 
 
     useEffect(() => {
-        setIsPlaying(songIsPlaying(props.song));
-    }, [props.song]);
+        music.isPlaying(props.song).then(setIsPlaying);
+    }, [props.song, music]);
 
     async function playPreview() {
-        const music = window.MusicKit.getInstance();
-        // @ts-ignore
-        music.previewOnly = true;
-
-        // @ts-ignore
-        music.volume = 0.5;
-        // @ts-ignore
-        await music.setQueue({song: props.song.attributes?.playParams?.catalogId || props.song.id, startPlaying: true});
+        await music.playPreview(props.song);
         setIsPlaying(true);
     }
 
-    async function stop() {
-        await music.stop();
+    function stop() {
+        music.stop();
         setIsPlaying(false);
     }
 

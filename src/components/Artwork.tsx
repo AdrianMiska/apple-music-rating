@@ -13,7 +13,7 @@ const artworkStyleOverride = `
 }`;
 
 /**
- * Displays album art with an optional play button overlayed on top.
+ * Displays Apple Music album art.
  */
 export function Artwork(props: { artwork: MusicKit.Artwork | null, size: number }) {
 
