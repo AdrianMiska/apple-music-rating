@@ -38,10 +38,16 @@ export function AppHeader() {
             <div
                 className="w-full block flex-grow lg:flex lg:items-center lg:w-auto max-h-0 lg:max-h-screen transition-all motion-reduce:transition-none"
                 ref={menu}>
-                <div className="text-sm lg:flex-grow">
+                <div className="text-sm mb-4 lg:mb-0 lg:ml-auto mt-4 lg:mt-0">
                     <a href="/"
-                       className="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-white mr-4 hidden">
+                       className="lg:inline-block text-white hover:text-white lg:mr-4">
                         Home
+                    </a>
+                </div>
+                <div className="text-sm mb-4 lg:mb-0">
+                    <a href="/authorize"
+                       className="lg:inline-block text-white hover:text-white lg:mr-4">
+                        Manage Streaming Providers
                     </a>
                 </div>
                 <div>
