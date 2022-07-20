@@ -1,5 +1,4 @@
 import React, {useEffect} from "react";
-import {createPlaylist, updatePlaylist} from "../PlaylistUtils";
 import {calculateElo, getEloRatings} from "../EloUtils";
 import {Song} from "../components/Song";
 import {useParams} from "react-router-dom";
@@ -10,7 +9,7 @@ import {PlayButton} from "../components/PlayButton";
 import {MusicWrapper} from "../MusicWrapper";
 
 class RatingPair {
-    constructor(public baseline: MusicKit.Songs | MusicKit.MusicVideos, public candidate: MusicKit.Songs | MusicKit.MusicVideos) {
+    constructor(public baseline: MusicWrapper.Song, public candidate: MusicWrapper.Song) {
     }
 }
 
@@ -18,8 +17,8 @@ export function SongRating() {
 
     let params = useParams();
     let playlistId = params.id;
-    let [inputSongs, setInputSongs] = React.useState<(MusicKit.Songs | MusicKit.MusicVideos)[]>([]);
-    let [inputPlaylist, setInputPlaylist] = React.useState<MusicKit.Playlists | MusicKit.LibraryPlaylists | null>(null);
+    let [inputSongs, setInputSongs] = React.useState<MusicWrapper.Song[]>([]);
+    let [inputPlaylist, setInputPlaylist] = React.useState<MusicWrapper.Playlist | null>(null);
     let [matchUp, setMatchUp] = React.useState<RatingPair | null>(null);
 
     let [ratings, setRatings] = React.useState<{ [key: string]: number }>({});
@@ -42,62 +41,21 @@ export function SongRating() {
         if (!playlistId) {
             return;
         }
-        MusicWrapper.getInstance().getMusicKit().then((music) => {
-            // @ts-ignore
-            return music.api.music('v1/me/library/playlists/' + playlistId, {
-                include: 'tracks',
+        MusicWrapper.getInstance().getPlaylist(playlistId)
+            .then((playlist: MusicWrapper.Playlist) => {
+                setInputPlaylist(playlist);
+                setInputSongs(playlist.tracks);
             })
-        }).then((playlist: any) => {
-            setInputPlaylist(playlist.data.data[0]);
-        })
     }, [playlistId]);
 
     useEffect(() => {
-
-        if (!inputPlaylist) {
-            return;
-        }
-
-        const songs: (MusicKit.Songs | MusicKit.MusicVideos)[] = inputPlaylist?.relationships.tracks.data;
-
-        // get all tracks from the paginated API
-        const getTracks = async (next: string) => {
-            let music = await MusicWrapper.getInstance().getMusicKit();
-            const response = await fetch(`https://api.music.apple.com${next}`, {
-                method: "GET",
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + music.developerToken,
-                    'Music-User-Token': music.musicUserToken
-                }
-            });
-            const data = await response.json();
-            songs.push(...data.data);
-            if (data.next) {
-                await getTracks(data.next);
-            }
-        }
-
-        if (inputPlaylist?.relationships.tracks.next) {
-            getTracks(inputPlaylist.relationships.tracks.next).then(() => {
-                setInputSongs(songs);
-            });
-        } else {
-            setInputSongs(songs);
-        }
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [inputPlaylist?.id]);
-
-    useEffect(() => {
-        console.log("inputSongs", inputSongs);
         setMatchUp(getCandidate());
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [inputSongs]);
 
 
     async function createOutputPlaylist(name: string | undefined) {
-        let createdPlaylist = await createPlaylist(`${name} Sorted`, `Sorted version of ${name} by Elo Music Rating`);
+        let createdPlaylist = await MusicWrapper.getInstance().createPlaylist(`${name} Sorted`, `Sorted version of ${name} by Elo Music Rating`);
         let sorted = inputSongs.sort((a, b) => {
             let aRating = ratings[a.id];
             let bRating = ratings[b.id];
@@ -106,7 +64,7 @@ export function SongRating() {
             }
             return aRating > bRating ? -1 : 1;
         });
-        await updatePlaylist(createdPlaylist, sorted);
+        await MusicWrapper.getInstance().updatePlaylist(createdPlaylist, sorted);
     }
 
 
@@ -118,7 +76,7 @@ export function SongRating() {
      *  Will choose two songs from the output playlist more often the bigger the output playlist is.
      *  Over time, the output playlist will be filled with more songs from the input playlist.
      */
-    function getCandidate(baseline?: MusicKit.Songs | MusicKit.MusicVideos): RatingPair | null {
+    function getCandidate(baseline?: MusicWrapper.Song): RatingPair | null {
 
         if (inputSongs.length === 0) {
             return null;
@@ -141,7 +99,7 @@ export function SongRating() {
     return <div>
         <SongRatingHeader inputPlaylist={inputPlaylist}
                           onSave={async () => {
-                              await createOutputPlaylist(inputPlaylist?.attributes?.name);
+                              await createOutputPlaylist(inputPlaylist?.name);
                           }}/>
         <div className="grid grid-cols-2 my-2">
             <Song song={matchUp.baseline} playlistId={playlistId}/>
@@ -160,7 +118,7 @@ export function SongRating() {
                         }>
                         <HeartIcon/>
                     </button>
-                    <PlayButton song={new MusicWrapper.Song(matchUp.baseline)}/>
+                    <PlayButton song={matchUp.baseline}/>
                 </div>
             </div>
             <div className="flex flex-col justify-center">
@@ -175,15 +133,15 @@ export function SongRating() {
             </div>
             <div className="flex flex-col w-full items-center">
                 <div className="flex flex-row items-center">
-                    <PlayButton song={new MusicWrapper.Song(matchUp.candidate)}/>
+                    <PlayButton song={matchUp.candidate}/>
                     <button
                         className="bg-gray-500 border-0 text-white hover:bg-gray-700 rounded-full h-10 w-10 p-2"
                         onClick={async () => {
 
-                            let playing = await MusicWrapper.getInstance().isPlaying(matchUp ? new MusicWrapper.Song(matchUp?.candidate) : null)
+                            let playing = await MusicWrapper.getInstance().isPlaying(matchUp?.candidate || null)
                             //don't stop if the candidate is currently playing
                             if (!playing) {
-                                (await MusicWrapper.getInstance().getMusicKit()).stop()
+                                (await MusicWrapper.getInstance().stop())
                             }
                             await calculateElo(playlistId!, matchUp!.baseline, matchUp!.candidate, "candidate");
                             setMatchUp(getCandidate(matchUp!.candidate)); // keep candidate as incumbent baseline

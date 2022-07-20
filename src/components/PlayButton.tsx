@@ -25,8 +25,8 @@ export function PlayButton(props: { song: MusicWrapper.Song }) {
         setIsPlaying(true);
     }
 
-    function stop() {
-        music.stop();
+    async function stop() {
+        await music.stop();
         setIsPlaying(false);
     }
 

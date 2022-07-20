@@ -3,7 +3,7 @@ import {ChevronLeftIcon, PlusIcon} from "@heroicons/react/outline";
 import React from "react";
 import {MusicWrapper} from "../MusicWrapper";
 
-export function SongRatingHeader(props: { inputPlaylist: MusicKit.Playlists | MusicKit.LibraryPlaylists | null, onSave: () => Promise<void> }) {
+export function SongRatingHeader(props: { inputPlaylist: MusicWrapper.Playlist | null, onSave: () => Promise<void> }) {
     let navigate = useNavigate();
     return <div id="song-rating-header" className="flex items-center relative justify-between">
         <div className="w-2/6">
@@ -19,7 +19,7 @@ export function SongRatingHeader(props: { inputPlaylist: MusicKit.Playlists | Mu
         </div>
         <div className="items-center w-2/6 justify-center">
             <h1 className="text-2xl font-bold">
-                {props.inputPlaylist?.attributes?.name}
+                {props.inputPlaylist?.name}
             </h1>
         </div>
         <div className="w-1/3">

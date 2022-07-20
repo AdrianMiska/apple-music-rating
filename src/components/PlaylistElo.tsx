@@ -1,12 +1,13 @@
 import React, {useEffect} from "react";
 import {PlaylistSong} from "./PlaylistSong";
+import {MusicWrapper} from "../MusicWrapper";
 
 /**
  * This component will display the songs in a playlist along with their ratings.
  */
-export function PlaylistElo(props: { playlistId: string, songs: (MusicKit.Songs | MusicKit.MusicVideos)[], ratings: { [key: string]: number } }) {
+export function PlaylistElo(props: { playlistId: string, songs: MusicWrapper.Song[], ratings: { [key: string]: number } }) {
 
-    let [sortedSongs, setSortedSongs] = React.useState<(MusicKit.Songs | MusicKit.MusicVideos)[]>([]);
+    let [sortedSongs, setSortedSongs] = React.useState<MusicWrapper.Song[]>([]);
 
     useEffect(() => {
         let sorted = props.songs.sort((a, b) => {
@@ -18,7 +19,7 @@ export function PlaylistElo(props: { playlistId: string, songs: (MusicKit.Songs 
     }, [props.songs, props.ratings]);
 
     return <div>
-        {sortedSongs.map((song: MusicKit.Songs | MusicKit.MusicVideos) => {
+        {sortedSongs.map((song: MusicWrapper.Song) => {
             let rating = props.ratings[song.id] || 0;
             return <PlaylistSong key={song.id} song={song} rating={rating}/>
         })}

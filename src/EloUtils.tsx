@@ -2,11 +2,12 @@
  * Gets the songs ELO rating from local storage
  */
 import firebase from "firebase/compat/app";
-import Unsubscribe = firebase.Unsubscribe;
 import "firebase/firestore";
 import {collection, doc, getDoc, getFirestore, onSnapshot, setDoc} from "firebase/firestore";
+import {MusicWrapper} from "./MusicWrapper";
+import Unsubscribe = firebase.Unsubscribe;
 
-export async function setEloRating(playlistId: string, song: MusicKit.Songs | MusicKit.MusicVideos, rating: number) {
+export async function setEloRating(playlistId: string, song: MusicWrapper.Song, rating: number) {
     let firebaseUid = firebase.auth().currentUser?.uid;
     if (!!firebaseUid) {
 
@@ -20,7 +21,7 @@ export async function setEloRating(playlistId: string, song: MusicKit.Songs | Mu
     }
 }
 
-export async function getEloRating(playlistId: string, song: MusicKit.Songs | MusicKit.MusicVideos): Promise<number> {
+export async function getEloRating(playlistId: string, song: MusicWrapper.Song): Promise<number> {
     let firebaseUid = firebase.auth().currentUser?.uid;
     if (!!firebaseUid) {
 
@@ -57,7 +58,7 @@ export function getEloRatings(playlistId: string, callback: (ratings: { [songId:
     }
 }
 
-export async function calculateElo(playlistId: string, baseline: MusicKit.Songs | MusicKit.MusicVideos, candidate: MusicKit.Songs | MusicKit.MusicVideos, winner: "baseline" | "candidate" | "tie") {
+export async function calculateElo(playlistId: string, baseline: MusicWrapper.Song, candidate: MusicWrapper.Song, winner: "baseline" | "candidate" | "tie") {
     const baselineRating = await getEloRating(playlistId, baseline);
     const candidateRating = await getEloRating(playlistId, candidate);
     const expectedBaseline = 1 / (1 + Math.pow(10, (candidateRating - baselineRating) / 400));
