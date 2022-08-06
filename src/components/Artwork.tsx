@@ -13,9 +13,9 @@ const artworkStyleOverride = `
 }`;
 
 /**
- * Displays Apple Music album art.
+ * Displays album art.
  */
-export function Artwork(props: { artwork: MusicKit.Artwork | null, size: number }) {
+export function Artwork(props: { artwork: MusicKit.Artwork | SpotifyApi.ImageObject | null, size: number }) {
 
     let ref = useRef<HTMLElement>();
 

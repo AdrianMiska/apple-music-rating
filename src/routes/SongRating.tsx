@@ -42,9 +42,9 @@ export function SongRating() {
             return;
         }
         MusicWrapper.getInstance().getPlaylist(playlistId)
-            .then((playlist: MusicWrapper.Playlist) => {
+            .then((playlist: MusicWrapper.Playlist | null) => {
                 setInputPlaylist(playlist);
-                setInputSongs(playlist.tracks);
+                setInputSongs(playlist?.tracks || []);
             })
     }, [playlistId]);
 
@@ -54,8 +54,17 @@ export function SongRating() {
     }, [inputSongs]);
 
 
-    async function createOutputPlaylist(name: string | undefined) {
-        let createdPlaylist = await MusicWrapper.getInstance().createPlaylist(`${name} Sorted`, `Sorted version of ${name} by Elo Music Rating`);
+    async function createOutputPlaylist(playlist: MusicWrapper.Playlist | null) {
+        if (!playlist) {
+            return;
+        }
+
+        let createdPlaylist = await MusicWrapper.getInstance().createPlaylist(`${playlist.name} Sorted`, `Sorted version of ${playlist.name} by Elo Music Rating`, playlist.musicProvider);
+
+        if(!createdPlaylist) {
+            return;
+        }
+
         let sorted = inputSongs.sort((a, b) => {
             let aRating = ratings[a.id];
             let bRating = ratings[b.id];
@@ -99,7 +108,7 @@ export function SongRating() {
     return <div>
         <SongRatingHeader inputPlaylist={inputPlaylist}
                           onSave={async () => {
-                              await createOutputPlaylist(inputPlaylist?.name);
+                              await createOutputPlaylist(inputPlaylist);
                           }}/>
         <div className="grid grid-cols-2 my-2">
             <Song song={matchUp.baseline} playlistId={playlistId}/>

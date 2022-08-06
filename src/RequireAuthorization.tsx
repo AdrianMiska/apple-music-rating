@@ -9,8 +9,8 @@ export function RequireAuthorization({children}: { children: JSX.Element }) {
 
     useEffect(() => {
         let authorized = async () => {
-            let isAuthorized = await MusicWrapper.getInstance().isAuthorized();
-            setIsAuthorized(isAuthorized);
+            let authorizations = await MusicWrapper.getInstance().getAuthorizations();
+            setIsAuthorized(authorizations.length > 0);
         }
         authorized().then(() => {
             setIsLoading(false);
