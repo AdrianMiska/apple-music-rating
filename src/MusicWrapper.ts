@@ -415,13 +415,13 @@ export namespace MusicWrapper {
         async searchPlaylist(searchTerm: string, onlyApple: boolean = false): Promise<Playlist[]> {
             let res = [];
             let effectiveSearchTerm = searchTerm.trim().replace(/[^a-zA-Z\d]/g, "*");
+            if (effectiveSearchTerm.length === 0) {
+                return [];
+            }
 
             let musicProviders = await this.getAuthorizations();
             if (musicProviders.includes(MusicProvider.AppleMusic)) {
                 let musicKit = await this.getMusicKit();
-                if (effectiveSearchTerm.length === 0) {
-                    return [];
-                }
 
                 // @ts-ignore
                 let results = (await musicKit.api.music('v1/me/library/search', {
