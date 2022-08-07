@@ -44,7 +44,12 @@ export function SongRating() {
         MusicWrapper.getInstance().getPlaylist(playlistId)
             .then((playlist: MusicWrapper.Playlist | null) => {
                 setInputPlaylist(playlist);
-                setInputSongs(playlist?.tracks || []);
+                let songs = playlist?.tracks || [];
+                //duplicates mess everything up, so we remove them
+                let deduplicatedSongs = songs.filter((song, index) => {
+                    return songs.findIndex(s => s.id === song.id) === index;
+                });
+                setInputSongs(deduplicatedSongs);
             })
     }, [playlistId]);
 
