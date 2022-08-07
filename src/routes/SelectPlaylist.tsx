@@ -22,13 +22,13 @@ function PlaylistTile(props: { musicProvider: MusicWrapper.MusicProvider, name: 
 
     return <div className="w-1/2 md:w-1/3 lg:w-1/4 my-2">
         <div
-            className="flex m-2 p-3 h-full cursor-pointer bg-white rounded-lg shadow-lg hover:bg-gray-100 hover:shadow-md justify-evenly"
+            className="flex mx-2 px-4 py-5 h-full cursor-pointer bg-white rounded-lg shadow-lg hover:bg-gray-100 hover:shadow-md justify-evenly"
             onClick={props.onClick}>
             {getIcon()}
 
-            <span className="font-bold text-xl my-auto">
+            <p className="font-bold text-xl my-auto">
                 {props.name}
-            </span>
+            </p>
 
         </div>
 
@@ -63,8 +63,8 @@ export function SelectPlaylist() {
     let navigate = useNavigate();
 
     return <div>
-        <span>Use all the songs you marked as favorite:</span>
-        <div className="mb-4">
+        <p>Use all the songs you marked as favorite:</p>
+        <div className="m-3">
             <div className="flex flex-row">
                 {appleMusicUser &&
                     <PlaylistTile musicProvider={MusicWrapper.MusicProvider.AppleMusic}
@@ -80,16 +80,19 @@ export function SelectPlaylist() {
         <input type="text"
                placeholder="Search"
                className="bg-gray-200 appearance-none border-2 border-gray-200 rounded-full
-               w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-700 max-w-sm"
+               w-full m-3 py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-700 max-w-sm"
                value={searchTerm}
                onChange={e => {
                    setSearchTerm(e.target.value);
                }}/>
         <div className="flex flex-wrap">
             {searchResults?.map(playlist => {
-                return <PlaylistTile musicProvider={playlist.musicProvider} name={playlist.name} onClick={() => {
-                    navigate(`/song-rating/${playlist.id}`);
-                }}/>
+                return <PlaylistTile key={playlist.id}
+                                     musicProvider={playlist.musicProvider}
+                                     name={playlist.name}
+                                     onClick={() => {
+                                         navigate(`/song-rating/${playlist.id}`);
+                                     }}/>
             })}
         </div>
 

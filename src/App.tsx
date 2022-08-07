@@ -18,7 +18,9 @@ export default function App() {
 
     return <div className="text-center">
         <AppHeader/>
-        <Outlet/>
+        <div className="m-3">
+            <Outlet/>
+        </div>
     </div>
 
 }

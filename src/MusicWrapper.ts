@@ -8,11 +8,72 @@ export namespace MusicWrapper {
         Spotify,
     }
 
+    class SpotifyPlayer {
+
+        private player: HTMLAudioElement;
+
+        private _nowPlaying: string | null;
+
+        private onPlaybackChangeListeners: (() => void)[] = [];
+
+        constructor() {
+            this.player = new Audio();
+            this.player.volume = 0.5;
+            this._nowPlaying = null;
+        }
+
+        public get nowPlaying(): string | null {
+            return this._nowPlaying;
+        }
+
+        public onPlaybackChange(listener: () => void) {
+            this.onPlaybackChangeListeners.push(listener);
+        }
+
+        public async play(song: Song) {
+            if (this.nowPlaying === song.id) {
+                await this.player.play();
+                this.onPlaybackChangeListeners.forEach(listener => listener());
+                return;
+            }
+            if (!song.previewUrl) {
+                this.stop();
+                throw new Error("No preview url");
+            }
+            this.player.src = song.previewUrl;
+            await this.player.play();
+            this._nowPlaying = song.id;
+            this.onPlaybackChangeListeners.forEach(listener => listener());
+            this.player.onended = () => {
+                this._nowPlaying = null;
+                this.onPlaybackChangeListeners.forEach(listener => listener());
+            }
+        }
+
+        public stop() {
+            this.player.pause();
+            this.player.currentTime = 0;
+            this._nowPlaying = null;
+            this.onPlaybackChangeListeners.forEach(listener => listener());
+        }
+
+
+    }
+
     class Music {
 
         private musicKit: MusicKit.MusicKitInstance | undefined;
 
         private spotifyApi: SpotifyWebApi.SpotifyWebApiJs | undefined;
+
+        private spotifyPlayer: SpotifyPlayer | undefined;
+
+        private getSpotifyPlayer(): SpotifyPlayer {
+            if (!this.spotifyPlayer) {
+                this.spotifyPlayer = new SpotifyPlayer();
+            }
+            return this.spotifyPlayer;
+        }
 
         private async getMusicKit() {
             if (this.musicKit) {
@@ -79,7 +140,7 @@ export namespace MusicWrapper {
             }
 
             if (song.musicProvider === MusicProvider.Spotify) {
-                //TODO play spotify preview
+                await this.getSpotifyPlayer().play(song);
             }
         }
 
@@ -94,7 +155,9 @@ export namespace MusicWrapper {
                     });
                 }
                 if (authorizedProviders.includes(MusicProvider.Spotify)) {
-                    //TODO add spotify event listener
+                    this.getSpotifyPlayer().onPlaybackChange(() => {
+                        callback();
+                    });
                 }
             });
         }
@@ -110,7 +173,8 @@ export namespace MusicWrapper {
                 return music.isPlaying && (music.nowPlayingItem?.container.id === song.id || music.nowPlayingItem?.container.id === song.catalogId);
             }
             if (song.musicProvider === MusicProvider.Spotify) {
-                //TODO check if spotify is playing
+                let spotifyPlayer = await this.getSpotifyPlayer();
+                return spotifyPlayer.nowPlaying === song.id;
             }
 
             return false;
@@ -123,7 +187,7 @@ export namespace MusicWrapper {
                 music.stop();
             }
             if (authorizedProviders.includes(MusicProvider.Spotify)) {
-                //TODO stop spotify
+                await this.getSpotifyPlayer().stop();
             }
         }
 
@@ -262,9 +326,13 @@ export namespace MusicWrapper {
                 let spotifyApi = await this.getSpotify();
                 let tracks = await spotifyApi.getMySavedTracks();
                 //pagination
+                let market = (await spotifyApi.getMe()).country;
 
                 while (tracks.next) {
-                    let nextTracks = await spotifyApi.getMySavedTracks({offset: tracks.offset + tracks.limit});
+                    let nextTracks = await spotifyApi.getMySavedTracks({
+                        offset: tracks.offset + tracks.limit,
+                        market: market
+                    });
                     nextTracks.items = tracks.items.concat(nextTracks.items);
                     tracks = nextTracks;
                 }
@@ -326,11 +394,15 @@ export namespace MusicWrapper {
                 return new Playlist(musicKitPlaylist, songs.map(song => new Song(song)));
             } else {
                 let spotifyApi = await this.getSpotify();
-                let playlist = await spotifyApi.getPlaylist(playlistId);
+                let market = (await spotifyApi.getMe()).country;
+                let playlist = await spotifyApi.getPlaylist(playlistId, {market: market});
                 let tracks = playlist.tracks;
 
                 while (tracks.next) {
-                    let nextTracks = await spotifyApi.getPlaylistTracks(playlistId, {offset: tracks.offset + tracks.limit});
+                    let nextTracks = await spotifyApi.getPlaylistTracks(playlistId, {
+                        offset: tracks.offset + tracks.limit,
+                        market: market
+                    });
                     nextTracks.items = tracks.items.concat(nextTracks.items);
                     tracks = nextTracks;
                 }
@@ -392,10 +464,19 @@ export namespace MusicWrapper {
                         }
                     })
                 });
-                return (await response.json()).data[0];
+                return new Playlist((await response.json()).data[0]);
             }
 
             if (musicProvider === MusicProvider.Spotify) {
+
+                let spotifyApi = await this.getSpotify();
+                let currentUserId = (await spotifyApi.getMe()).id;
+                let response = await spotifyApi.createPlaylist(currentUserId, {
+                    name: name,
+                    description: description,
+                    public: false
+                });
+                return new Playlist(response);
 
             }
 
@@ -403,26 +484,34 @@ export namespace MusicWrapper {
         }
 
         async updatePlaylist(playlist: Playlist, songs: Song[]): Promise<any> {
-            let musicKit = await this.getMusicKit();
 
-            return fetch(`https://api.music.apple.com/v1/me/library/playlists/${playlist.id}/tracks`, {
-                //method: 'PUT',
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + musicKit.developerToken,
-                    'Music-User-Token': musicKit.musicUserToken
-                },
-                body: JSON.stringify({
-                    data: songs.map((songs) => {
-                            return {
-                                id: songs.id,
-                                type: songs.type,
-                            };
-                        }
-                    )
-                })
-            });
+            if (playlist.musicProvider === MusicProvider.AppleMusic) {
+
+                let musicKit = await this.getMusicKit();
+
+                return fetch(`https://api.music.apple.com/v1/me/library/playlists/${playlist.id}/tracks`, {
+                    //method: 'PUT',
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + musicKit.developerToken,
+                        'Music-User-Token': musicKit.musicUserToken
+                    },
+                    body: JSON.stringify({
+                        data: songs.map((songs) => {
+                                return {
+                                    id: songs.id,
+                                    type: songs.type,
+                                };
+                            }
+                        )
+                    })
+                });
+            }
+            if (playlist.musicProvider === MusicProvider.Spotify) {
+                let spotifyApi = await this.getSpotify();
+                return spotifyApi.replaceTracksInPlaylist(playlist.id, songs.map(song => "spotify:track:" + song.id));
+            }
         }
 
 
@@ -495,16 +584,32 @@ export namespace MusicWrapper {
 
     }
 
+
+    export class Artwork {
+        url: string;
+        width: number | null | undefined;
+        height: number | null | undefined;
+
+        constructor(artwork: SpotifyApi.ImageObject | MusicKit.Artwork) {
+            this.url = artwork.url;
+            this.width = artwork.width;
+            this.height = artwork.height;
+        }
+    }
+
     export class Song {
         id: string;
         title: string | null | undefined;
         artist: string | null | undefined;
         album: string | null | undefined;
-        artwork: MusicKit.Artwork | SpotifyApi.ImageObject | null | undefined;
+        artwork: Artwork | null | undefined;
         catalogId: string | null | undefined;
         type: "songs" | "music-videos";
         genreNames: string[];
         musicProvider: MusicProvider;
+        previewUrl: string | null | undefined;
+
+        //TODO add market restrictions
 
         constructor(song: MusicKit.Songs | MusicKit.MusicVideos | SpotifyApi.TrackObjectFull | SpotifyApi.EpisodeObjectFull) {
 
@@ -513,17 +618,19 @@ export namespace MusicWrapper {
                 this.title = song.name;
                 this.artist = song.artists.map(artist => artist.name).join(", ");
                 this.album = song.album.name;
-                this.artwork = song.album.images[0];
+                this.artwork = new Artwork(song.album.images[0]);
                 this.catalogId = null;
                 this.type = "songs";
                 this.genreNames = []; //TODO
                 this.musicProvider = MusicProvider.Spotify;
+                this.previewUrl = song.preview_url;
+
             } else if (song.type === "episode") {
                 this.id = song.id;
                 this.title = song.name;
                 this.artist = song.show.publisher;
                 this.album = song.show.name;
-                this.artwork = song.show.images[0];
+                this.artwork = new Artwork(song.show.images[0]);
                 this.catalogId = null;
                 this.type = "songs";
                 this.genreNames = []; //TODO
@@ -533,12 +640,15 @@ export namespace MusicWrapper {
                 this.title = song.attributes?.name;
                 this.artist = song.attributes?.artistName;
                 this.album = song.attributes?.albumName;
-                this.artwork = song.attributes?.artwork;
                 this.type = song.type;
                 this.genreNames = song.attributes?.genreNames || [];
                 // @ts-ignore
                 this.catalogId = song.attributes?.playParams?.catalogId;
                 this.musicProvider = MusicProvider.AppleMusic;
+                let artwork = song.attributes?.artwork;
+                if (artwork) {
+                    this.artwork = new Artwork(artwork);
+                }
             }
         }
 

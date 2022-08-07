@@ -9,7 +9,7 @@ export function PlaylistSong(props: { song: MusicWrapper.Song, rating: number })
 
     return <div className="flex flex-row items-center mb-2">
         <div className="w-1/6 px-2">
-            <Artwork artwork={props.song.artwork || null} size={3}/>
+            <Artwork artwork={props.song.artwork || null}/>
         </div>
         <div className="w-4/6">
             <div className="flex flex-col">

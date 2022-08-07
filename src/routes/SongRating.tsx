@@ -59,9 +59,10 @@ export function SongRating() {
             return;
         }
 
-        let createdPlaylist = await MusicWrapper.getInstance().createPlaylist(`${playlist.name} Sorted`, `Sorted version of ${playlist.name} by Elo Music Rating`, playlist.musicProvider);
+        let existingPlaylist = playlist.musicProvider !== MusicWrapper.MusicProvider.AppleMusic && (await MusicWrapper.getInstance().searchPlaylist(`${playlist.name} Sorted`)).find(p => p.description === `Sorted version of ${playlist.name} by Elo Music Rating`);
+        let outputPlaylist = existingPlaylist || await MusicWrapper.getInstance().createPlaylist(`${playlist.name} Sorted`, `Sorted version of ${playlist.name} by Elo Music Rating`, playlist.musicProvider);
 
-        if(!createdPlaylist) {
+        if(!outputPlaylist) {
             return;
         }
 
@@ -73,18 +74,9 @@ export function SongRating() {
             }
             return aRating > bRating ? -1 : 1;
         });
-        await MusicWrapper.getInstance().updatePlaylist(createdPlaylist, sorted);
+        await MusicWrapper.getInstance().updatePlaylist(outputPlaylist, sorted);
     }
 
-
-    /** Get two songs to be rated by the user.
-     *  The songs will be picked at random, either both from the output playlist or one from each playlist.
-     *  Depending on how many songs are already in the output playlist, songs from the output playlist are more likely to be picked.
-     *
-     *  Important: Will ensure that songs are not repeated in the output playlist.
-     *  Will choose two songs from the output playlist more often the bigger the output playlist is.
-     *  Over time, the output playlist will be filled with more songs from the input playlist.
-     */
     function getCandidate(baseline?: MusicWrapper.Song): RatingPair | null {
 
         if (inputSongs.length === 0) {

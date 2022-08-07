@@ -20,7 +20,7 @@ export function Song(props: { song: MusicWrapper.Song, playlistId: string }) {
 
 
     return <div className="flex flex-col items-center px-4">
-        <Artwork artwork={props.song.artwork || null} size={8}/>
+        <Artwork artwork={props.song.artwork || null}/>
 
         <div className="text-center">
             <h1 className="text-xl font-bold my-2">{props.song.title}</h1>

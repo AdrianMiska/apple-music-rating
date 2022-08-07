@@ -19,6 +19,7 @@ jobs:
           REACT_APP_MUSIC_KIT_DEVELOPER_TOKEN: '${{ secrets.REACT_APP_MUSIC_KIT_DEVELOPER_TOKEN }}'
           REACT_APP_FIREBASE_API_KEY: '${{ secrets.REACT_APP_FIREBASE_API_KEY }}'
           REACT_APP_SPOTIFY_CLIENT_ID: '${{ secrets.REACT_APP_SPOTIFY_CLIENT_ID }}'
+          REACT_APP_SENTRY_DSN: '${{ secrets.REACT_APP_SENTRY_DSN }}'
       - id: firebase-deploy
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
