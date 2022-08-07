@@ -1,4 +1,4 @@
-import React, {useRef} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import firebase from "firebase/compat/app";
 import {useNavigate} from "react-router-dom";
 
@@ -7,6 +7,8 @@ import {useNavigate} from "react-router-dom";
  */
 export function AppHeader() {
 
+    let [isAuthenticated, setIsAuthenticated] = useState(false);
+
     let menu = useRef<HTMLDivElement>(null);
 
     function toggleMenu() {
@@ -14,6 +16,18 @@ export function AppHeader() {
         menu.current?.classList.toggle('max-h-screen');
 
     }
+
+    useEffect(() => {
+        if (localStorage.getItem("elo-rating.anonymous") === "true") {
+            setIsAuthenticated(true);
+        }
+    }, []);
+
+    useEffect(() => {
+        firebase.auth().onAuthStateChanged(user => {
+            setIsAuthenticated(!!user);
+        });
+    }, []);
 
     let navigate = useNavigate();
 
@@ -51,25 +65,21 @@ export function AppHeader() {
                     </a>
                 </div>
                 <div>
-                    {
-                        !firebase.auth().currentUser &&
-                        <button className="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white
+                    {isAuthenticated
+                        ? <button className="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white
                             hover:border-transparent hover:text-white hover:bg-blue-600 mt-4 lg:mt-0"
-                                onClick={() => {
-                                    navigate("/login", {state: {from: window.location.pathname}});
-                                }}>
-                            Create Account
-                        </button>
-                    }
-                    {
-                        firebase.auth().currentUser &&
-                        <button className="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white
-                            hover:border-transparent hover:text-white hover:bg-blue-600 mt-4 lg:mt-0"
-                                onClick={async () => {
-                                    await firebase.auth().signOut();
-                                    navigate("/login", {state: {from: window.location.pathname}});
-                                }}>
+                                  onClick={async () => {
+                                      await firebase.auth().signOut();
+                                      navigate("/login", {state: {from: window.location.pathname}});
+                                  }}>
                             Logout
+                        </button>
+                        : <button className="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white
+                            hover:border-transparent hover:text-white hover:bg-blue-600 mt-4 lg:mt-0"
+                                  onClick={() => {
+                                      navigate("/login", {state: {from: window.location.pathname}});
+                                  }}>
+                            Create Account
                         </button>
                     }
                 </div>

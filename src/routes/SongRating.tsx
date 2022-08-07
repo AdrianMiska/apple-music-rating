@@ -107,11 +107,11 @@ export function SongRating() {
                           onSave={async () => {
                               await createOutputPlaylist(inputPlaylist);
                           }}/>
-        <div className="grid grid-cols-2 my-2">
+        <div className="grid grid-cols-2 my-2 max-w-xl mx-auto">
             <Song song={matchUp.baseline} playlistId={playlistId}/>
             <Song song={matchUp.candidate} playlistId={playlistId}/>
         </div>
-        <div className="flex flex-row my-2">
+        <div className="flex flex-row my-2 max-w-xl mx-auto">
             <div className="flex flex-col w-full items-center">
                 <div className="flex flex-row items-center">
                     <button

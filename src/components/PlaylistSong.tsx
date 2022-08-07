@@ -7,36 +7,17 @@ import {MusicWrapper} from "../MusicWrapper";
  */
 export function PlaylistSong(props: { song: MusicWrapper.Song, rating: number }) {
 
-    return <div className="flex flex-row items-center mb-2">
-        <div className="w-1/6 px-2">
+    return <div className="flex flex-row items-center my-2 max-w-2xl mx-auto">
+        <div className="w-1/6">
             <Artwork artwork={props.song.artwork || null}/>
         </div>
-        <div className="w-4/6">
-            <div className="flex flex-col">
-                <div className="flex flex-row items-center">
-                    <div className="w-1/3">
-                        <div className="text-sm">
-                            {props.song.title}
-                        </div>
-                    </div>
-                    <div className="w-2/3">
-                        <div className="text-sm">
-                            {props.song.album}
-                        </div>
-                    </div>
+        <div className="w-4/6 px-4">
+            <div className="flex flex-col text-left">
+                <div className="text-sm font-bold text-ellipsis line-clamp-1">
+                    {props.song.title}
                 </div>
-                <div className="flex flex-row items-center">
-                    <div className="w-1/3">
-                        <div className="text-sm">
-
-                            {props.song.artist}
-                        </div>
-                    </div>
-                    <div className="w-2/3">
-                        <div className="text-sm">
-                            {props.song.genreNames.join(", ")}
-                        </div>
-                    </div>
+                <div className="text-xs text-ellipsis line-clamp-1">
+                    {props.song.artist}
                 </div>
             </div>
         </div>

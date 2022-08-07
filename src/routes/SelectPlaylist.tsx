@@ -65,7 +65,7 @@ export function SelectPlaylist() {
     return <div>
         <p>Use all the songs you marked as favorite:</p>
         <div className="m-3">
-            <div className="flex flex-row">
+            <div className="flex flex-row justify-center">
                 {appleMusicUser &&
                     <PlaylistTile musicProvider={MusicWrapper.MusicProvider.AppleMusic}
                                   name={"Favorites"}
@@ -85,7 +85,7 @@ export function SelectPlaylist() {
                onChange={e => {
                    setSearchTerm(e.target.value);
                }}/>
-        <div className="flex flex-wrap">
+        <div className="flex flex-wrap justify-center">
             {searchResults?.map(playlist => {
                 return <PlaylistTile key={playlist.id}
                                      musicProvider={playlist.musicProvider}

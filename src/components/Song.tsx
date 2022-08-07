@@ -7,7 +7,7 @@ import {MusicWrapper} from "../MusicWrapper";
  */
 export function Song(props: { song: MusicWrapper.Song, playlistId: string }) {
 
-    return <div className="flex flex-col items-center px-4">
+    return <div className="flex flex-col items-center px-4 mt-auto mx-auto max-w-xs">
         <Artwork artwork={props.song.artwork || null}/>
 
         <div className="text-center">
