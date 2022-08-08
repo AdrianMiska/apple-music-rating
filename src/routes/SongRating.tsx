@@ -67,7 +67,7 @@ export function SongRating() {
         let existingPlaylist = playlist.musicProvider !== MusicWrapper.MusicProvider.AppleMusic && (await MusicWrapper.getInstance().searchPlaylist(`${playlist.name} Sorted`)).find(p => p.description === `Sorted version of ${playlist.name} by Elo Music Rating`);
         let outputPlaylist = existingPlaylist || await MusicWrapper.getInstance().createPlaylist(`${playlist.name} Sorted`, `Sorted version of ${playlist.name} by Elo Music Rating`, playlist.musicProvider);
 
-        if(!outputPlaylist) {
+        if (!outputPlaylist) {
             return;
         }
 
@@ -91,14 +91,22 @@ export function SongRating() {
         baseline = baseline || inputSongs[Math.floor(Math.random() * inputSongs.length)];
         let candidate = inputSongs[Math.floor(Math.random() * inputSongs.length)];
         if (baseline.id === candidate.id) {
-            candidate = inputSongs[inputSongs.indexOf(candidate) + 1];
+            let candidateIndex = inputSongs.indexOf(candidate);
+            if (candidateIndex + 1 < inputSongs.length) {
+                candidate = inputSongs[candidateIndex + 1];
+            } else if (candidateIndex - 1 >= 0) {
+                candidate = inputSongs[candidateIndex - 1];
+            }
         }
         return new RatingPair(baseline, candidate);
     }
 
+    //TODO handle empty playlist
+
     if (!playlistId || !inputSongs.length || !matchUp) {
         return <div>Loading...</div>;
     }
+
 
     //TODO display a message that data is local in case of anonymous users with an option to sign up
 
