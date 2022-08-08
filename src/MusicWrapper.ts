@@ -618,7 +618,10 @@ export namespace MusicWrapper {
                 this.title = song.name;
                 this.artist = song.artists.map(artist => artist.name).join(", ");
                 this.album = song.album.name;
-                this.artwork = new Artwork(song.album.images[0]);
+                let artwork = song.album.images[0];
+                if (artwork) {
+                    this.artwork = new Artwork(artwork);
+                }
                 this.catalogId = null;
                 this.type = "songs";
                 this.genreNames = []; //TODO
@@ -630,7 +633,10 @@ export namespace MusicWrapper {
                 this.title = song.name;
                 this.artist = song.show.publisher;
                 this.album = song.show.name;
-                this.artwork = new Artwork(song.show.images[0]);
+                let artwork = song.show.images[0];
+                if (artwork) {
+                    this.artwork = new Artwork(artwork);
+                }
                 this.catalogId = null;
                 this.type = "songs";
                 this.genreNames = []; //TODO
