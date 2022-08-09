@@ -24,6 +24,8 @@ export function SongRating() {
     let [eloRecords, setEloRecords] = React.useState<Map<string, EloRecord>>(new Map());
     let [eloRecordsSorted, setEloRecordsSorted] = React.useState<EloRecord[]>([]);
 
+    let [firstMatchUpDone, setFirstMatchUpDone] = React.useState(false);
+
     useEffect(() => {
         if (!playlistId) {
             return;
@@ -55,11 +57,12 @@ export function SongRating() {
     }, [playlistId]);
 
     useEffect(() => {
-        if (inputSongs.length > 0 && eloRecordsSorted.length > 0) {
+        if (inputSongs.length > 0 && eloRecordsSorted.length > 0 && !firstMatchUpDone) {
             getMatchUp();
+            setFirstMatchUpDone(true);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [inputSongs, eloRecordsSorted]);
+    }, [inputSongs, eloRecordsSorted, firstMatchUpDone]);
 
 
     useEffect(() => {
