@@ -1,12 +1,12 @@
 import React, {useEffect} from "react";
 import {calculateElo, getEloRatings} from "../EloUtils";
-import {Song} from "../components/Song";
 import {useParams} from "react-router-dom";
 import {PlaylistElo} from "../components/PlaylistElo";
 import {SongRatingHeader} from "../components/SongRatingHeader";
 import {HeartIcon} from "@heroicons/react/solid";
 import {PlayButton} from "../components/PlayButton";
 import {MusicWrapper} from "../MusicWrapper";
+import {Artwork} from "../components/Artwork";
 
 class RatingPair {
     constructor(public baseline: MusicWrapper.Song, public candidate: MusicWrapper.Song) {
@@ -116,8 +116,18 @@ export function SongRating() {
                               await createOutputPlaylist(inputPlaylist);
                           }}/>
         <div className="grid grid-cols-2 my-2 max-w-xl mx-auto">
-            <Song song={matchUp.baseline} playlistId={playlistId}/>
-            <Song song={matchUp.candidate} playlistId={playlistId}/>
+            <div className="mx-4">
+                <Artwork artwork={matchUp.baseline.artwork || null}/>
+            </div>
+            <div className="mx-4">
+                <Artwork artwork={matchUp.candidate.artwork || null}/>
+            </div>
+
+            <h1 className="text-center text-xl font-bold my-2">{matchUp.baseline.title}</h1>
+            <h1 className="text-center text-xl font-bold my-2">{matchUp.candidate.title}</h1>
+
+            <h2 className="text-center text-sm font-semibold mb-2">{matchUp.baseline.artist}</h2>
+            <h2 className="text-center text-sm font-semibold mb-2">{matchUp.candidate.artist}</h2>
         </div>
         <div className="flex flex-row my-2 max-w-xl mx-auto">
             <div className="flex flex-col w-full items-center">
