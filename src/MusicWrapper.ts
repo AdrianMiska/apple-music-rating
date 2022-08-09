@@ -322,25 +322,11 @@ export namespace MusicWrapper {
         async getPlaylist(playlistId: string | 'apple-music-favorites' | 'spotify-saved-tracks'): Promise<Playlist | null> {
 
             if (playlistId === 'spotify-saved-tracks') {
-                // create pseudo playlist with all tracks
-                let spotifyApi = await this.getSpotify();
-                let tracks = await spotifyApi.getMySavedTracks();
-                //pagination
-                let market = (await spotifyApi.getMe()).country;
-
-                while (tracks.next) {
-                    let nextTracks = await spotifyApi.getMySavedTracks({
-                        offset: tracks.offset + tracks.limit,
-                        market: market
-                    });
-                    nextTracks.items = tracks.items.concat(nextTracks.items);
-                    tracks = nextTracks;
-                }
-
+                let favorites = await this.getSpotifyFavorites();
                 return {
                     id: playlistId,
                     name: 'Spotify Tracks',
-                    tracks: tracks.items.map(track => (new MusicWrapper.Song(track.track))),
+                    tracks: favorites,
                     description: '',
                     dateAdded: null,
                     musicProvider: MusicProvider.Spotify,
@@ -546,7 +532,38 @@ export namespace MusicWrapper {
             });
         }
 
+        private async getSpotifyFavorites() {
+
+            let favoritesDate = localStorage.getItem("spotify_favorites_date");
+            if (favoritesDate && Date.now() - Date.parse(favoritesDate) < 1000 * 60 * 60 * 24) {
+                return JSON.parse(localStorage.getItem("spotify_favorites") || "[]");
+            }
+
+            let spotifyApi = await this.getSpotify();
+            let tracks = await spotifyApi.getMySavedTracks();
+            //pagination
+            let market = (await spotifyApi.getMe()).country;
+
+            while (tracks.next) {
+                let nextTracks = await spotifyApi.getMySavedTracks({
+                    offset: tracks.offset + tracks.limit,
+                    market: market
+                });
+                nextTracks.items = tracks.items.concat(nextTracks.items);
+                tracks = nextTracks;
+            }
+            let favorites = tracks.items.map(track => (new MusicWrapper.Song(track.track)));
+            localStorage.setItem("spotify_favorites", JSON.stringify(favorites));
+            localStorage.setItem("spotify_favorites_date", new Date().toISOString());
+            return favorites;
+        }
+
         async getAppleMusicFavorites(): Promise<Song[]> {
+
+            let favoritesDate = localStorage.getItem("apple_music_favorites_date");
+            if (favoritesDate && Date.now() - Date.parse(favoritesDate) < 1000 * 60 * 60 * 24) {
+                return JSON.parse(localStorage.getItem("apple_music_favorites") || "[]");
+            }
 
             let musicKit = await this.getMusicKit();
 
@@ -579,7 +596,10 @@ export namespace MusicWrapper {
             });
 
             //filter out songs that aren't favorites
-            return (await this.filterAppleMusicFavorites(allSongs)).map((song) => new Song(song))
+            let favorites = (await this.filterAppleMusicFavorites(allSongs)).map((song) => new Song(song));
+            localStorage.setItem("apple_music_favorites", JSON.stringify(favorites));
+            localStorage.setItem("apple_music_favorites_date", new Date().toISOString());
+            return favorites
         }
 
     }
