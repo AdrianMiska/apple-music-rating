@@ -55,9 +55,11 @@ export function SongRating() {
     }, [playlistId]);
 
     useEffect(() => {
-        getMatchUp();
+        if (inputSongs.length > 0 && eloRecordsSorted.length > 0) {
+            getMatchUp();
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [inputSongs]);
+    }, [inputSongs, eloRecordsSorted]);
 
 
     useEffect(() => {
