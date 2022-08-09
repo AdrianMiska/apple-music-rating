@@ -22,7 +22,7 @@ function PlaylistTile(props: { musicProvider: MusicWrapper.MusicProvider, name: 
 
     return <div className="w-1/2 md:w-1/3 lg:w-1/4 my-2">
         <div
-            className="flex mx-2 px-4 py-5 h-full cursor-pointer bg-white rounded-lg shadow-lg hover:bg-gray-100 hover:shadow-md justify-evenly"
+            className="flex mx-2 px-4 py-5 h-full cursor-pointer bg-white rounded-lg shadow-lg hover:bg-gray-100 hover:shadow-md justify-evenly break-words"
             onClick={props.onClick}>
             {getIcon()}
 
@@ -64,7 +64,7 @@ export function SelectPlaylist() {
 
     return <div>
         <p>Use all the songs you marked as favorite:</p>
-        <div className="m-3">
+        <div className="my-3">
             <div className="flex flex-row justify-center">
                 {appleMusicUser &&
                     <PlaylistTile musicProvider={MusicWrapper.MusicProvider.AppleMusic}
@@ -79,8 +79,8 @@ export function SelectPlaylist() {
         <p>Or search for a playlist:</p>
         <input type="text"
                placeholder="Search"
-               className="bg-gray-200 appearance-none border-2 border-gray-200 rounded-full
-               w-full m-3 py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-700 max-w-sm"
+               className="appearance-none border-2 border-gray-200 bg-gray-200  rounded-full
+               my-3 py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-700 w-11/12 max-w-sm"
                value={searchTerm}
                onChange={e => {
                    setSearchTerm(e.target.value);
