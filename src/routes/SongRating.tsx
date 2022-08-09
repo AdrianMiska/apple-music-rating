@@ -118,7 +118,11 @@ export function SongRating() {
                 candidate = inputSongs[candidateIndex - 1];
             }
         }
-        setMatchUp(new RatingPair(baseline, candidate));
+        if (Math.random() < 0.5) {
+            setMatchUp(new RatingPair(baseline, candidate));
+        } else {
+            setMatchUp(new RatingPair(candidate, baseline));
+        }
     }
 
     //TODO handle empty playlist
@@ -136,10 +140,10 @@ export function SongRating() {
                               await createOutputPlaylist(inputPlaylist);
                           }}/>
         <div className="grid grid-cols-2 my-2 max-w-xl mx-auto">
-            <div className="mx-4">
+            <div className="mx-4 mt-auto">
                 <Artwork artwork={matchUp.baseline.artwork || null}/>
             </div>
-            <div className="mx-4">
+            <div className="mx-4 mt-auto">
                 <Artwork artwork={matchUp.candidate.artwork || null}/>
             </div>
 
