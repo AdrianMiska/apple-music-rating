@@ -126,8 +126,8 @@ export function SongRating() {
             <h1 className="text-center text-xl font-bold my-2">{matchUp.baseline.title}</h1>
             <h1 className="text-center text-xl font-bold my-2">{matchUp.candidate.title}</h1>
 
-            <h2 className="text-center text-sm font-semibold mb-2">{matchUp.baseline.artist}</h2>
-            <h2 className="text-center text-sm font-semibold mb-2">{matchUp.candidate.artist}</h2>
+            <h2 className="text-center text-sm font-semibold">{matchUp.baseline.artist}</h2>
+            <h2 className="text-center text-sm font-semibold">{matchUp.candidate.artist}</h2>
         </div>
         <div className="flex flex-row my-2 max-w-xl mx-auto">
             <div className="flex flex-col w-full items-center">
@@ -176,10 +176,16 @@ export function SongRating() {
                 </div>
             </div>
         </div>
-        <div className="flex flex-row justify-center">
-            <h2 className="text-center">
-                Current Playlist:
-            </h2>
+        <div className="flex flex-row justify-between">
+
+            <div>
+                Current ranking:
+            </div>
+
+            <div>
+                {inputSongs.length} songs
+            </div>
+
         </div>
         <PlaylistElo playlistId={playlistId} songs={inputSongs} ratings={ratings}/>
     </div>

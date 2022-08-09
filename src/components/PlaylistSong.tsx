@@ -13,10 +13,10 @@ export function PlaylistSong(props: { song: MusicWrapper.Song, rating: number })
         </div>
         <div className="w-4/6 px-4">
             <div className="flex flex-col text-left">
-                <div className="text-sm font-bold text-ellipsis line-clamp-1">
+                <div className="text-sm font-bold text-ellipsis line-clamp-1 break-all">
                     {props.song.title}
                 </div>
-                <div className="text-xs text-ellipsis line-clamp-1">
+                <div className="text-xs text-ellipsis line-clamp-1 break-all">
                     {props.song.artist}
                 </div>
             </div>
