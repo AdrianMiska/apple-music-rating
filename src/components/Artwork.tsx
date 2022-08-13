@@ -8,26 +8,27 @@ export function Artwork(props: { artwork: MusicWrapper.Artwork | null }) {
 
     function getUrl(artwork: MusicWrapper.Artwork): string {
         let url = artwork.url;
-        url = url.replace("{w}", artwork.width?.toString() || "300");
-        url = url.replace("{h}", artwork.height?.toString() || "300");
+        url = url.replace("{w}", "500");
+        url = url.replace("{h}", "500");
         return url;
     }
 
-    return <div className="rounded overflow-hidden w-fit h-fit">
+    return <div className="rounded overflow-hidden">
 
-        {props.artwork === null
-            ? <div className="text-center">
-                <div className="text-gray-500">
-                    No artwork
+        <div className="flex aspect-square">
+            {props.artwork !== null
+                ? <img src={getUrl(props.artwork)}
+                       className="object-scale-down max-w-full max-h-full"
+                       style={{width: "300px", height: "300px"}}
+                       loading="lazy"
+                       alt="Album art"/>
+                : <div className="text-center w-full h-full">
+                    <div className="text-gray-500">
+                        No artwork
+                    </div>
                 </div>
-            </div>
-            : <div className="max-h-max max-w-md">
-                <picture>
-                    <source type="image/jpeg" srcSet={getUrl(props.artwork)}/>
-                    <img src={getUrl(props.artwork)} alt="Album art"/>
-                </picture>
-
-            </div>}
+            }
+        </div>
 
     </div>
 }
