@@ -1,5 +1,5 @@
 import React, {useEffect} from "react";
-import {useNavigate} from "react-router-dom";
+import {Link} from "react-router-dom";
 import {MusicWrapper} from "../MusicWrapper";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faSpotify} from "@fortawesome/free-brands-svg-icons";
@@ -9,7 +9,7 @@ import MusicProvider = MusicWrapper.MusicProvider;
 /**
  * A clickable tile which represents a playlist. It has a nice hover effect and clicking the tile itself will take you to the song-rating page.
  */
-function PlaylistTile(props: { musicProvider: MusicWrapper.MusicProvider, name: string, onClick: () => void }) {
+function PlaylistTile(props: { musicProvider: MusicWrapper.MusicProvider, name: string, target: string }) {
 
     function getIcon() {
         switch (props.musicProvider) {
@@ -21,16 +21,17 @@ function PlaylistTile(props: { musicProvider: MusicWrapper.MusicProvider, name: 
     }
 
     return <div className="w-1/2 md:w-1/3 lg:w-1/4 my-2">
-        <div
-            className="flex mx-2 px-4 py-5 h-full cursor-pointer bg-white rounded-lg shadow-lg hover:bg-gray-100 hover:shadow-md justify-evenly break-words"
-            onClick={props.onClick}>
+        <Link
+            to={props.target}
+            className="flex mx-2 px-4 py-5 h-full cursor-pointer bg-white rounded-lg shadow-lg
+            hover:bg-gray-100 hover:shadow-md justify-evenly break-words">
             {getIcon()}
 
             <p className="font-bold text-xl my-auto">
                 {props.name}
             </p>
 
-        </div>
+        </Link>
 
     </div>;
 }
@@ -59,21 +60,18 @@ export function SelectPlaylist() {
         });
     }, [searchTerm]);
 
-
-    let navigate = useNavigate();
-
     return <div>
         <p>Use all the songs you marked as favorite:</p>
         <div className="my-3">
             <div className="flex flex-row justify-center">
                 {appleMusicUser &&
                     <PlaylistTile musicProvider={MusicWrapper.MusicProvider.AppleMusic}
-                                  name={"Favorites"}
-                                  onClick={() => navigate('/song-rating/apple-music-favorites')}/>}
+                                  name="Favorites"
+                                  target="/song-rating/apple-music-favorites"/>}
                 {spotifyUser &&
                     <PlaylistTile musicProvider={MusicWrapper.MusicProvider.Spotify}
-                                  name={"Favorites"}
-                                  onClick={() => navigate('/song-rating/spotify-saved-tracks')}/>}
+                                  name="Favorites"
+                                  target="/song-rating/spotify-saved-tracks"/>}
             </div>
         </div>
         <p>Or search for a playlist:</p>
@@ -90,9 +88,7 @@ export function SelectPlaylist() {
                 return <PlaylistTile key={playlist.id}
                                      musicProvider={playlist.musicProvider}
                                      name={playlist.name}
-                                     onClick={() => {
-                                         navigate(`/song-rating/${playlist.id}`);
-                                     }}/>
+                                     target={`/song-rating/${playlist.id}`}/>;
             })}
         </div>
 

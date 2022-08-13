@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from "react";
 import firebase from "firebase/compat/app";
-import {useNavigate} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 
 /**
  * Header with navbar and hamburger menu.
@@ -35,9 +35,10 @@ export function AppHeader() {
     return <header>
         <nav className="flex items-center justify-between flex-wrap bg-blue-700 p-3 overflow-hidden">
             <div className="flex items-center flex-shrink-0 text-white mr-6">
-                    <span className="font-semibold text-xl tracking-tight">
+                    <Link to="/"
+                        className="font-semibold text-xl tracking-tight">
                         Music Rating
-                    </span>
+                    </Link>
             </div>
             <div className="block lg:hidden">
                 <button className="flex items-center px-3 py-2 border rounded text-white border-white
@@ -53,21 +54,17 @@ export function AppHeader() {
                 className="w-full block flex-grow lg:flex lg:items-center lg:w-auto max-h-0 lg:max-h-screen transition-all motion-reduce:transition-none"
                 ref={menu}>
                 <div className="text-sm mb-4 lg:mb-0 lg:ml-auto mt-4 lg:mt-0">
-                    <a href="/"
-                       className="lg:inline-block text-white hover:text-white lg:mr-4">
-                        Home
-                    </a>
                 </div>
                 <div className="text-sm mb-4 lg:mb-0">
-                    <a href="/authorize"
+                    <Link to="/authorize"
                        className="lg:inline-block text-white hover:text-white lg:mr-4">
                         Manage Streaming Providers
-                    </a>
+                    </Link>
                 </div>
                 <div>
                     {isAuthenticated
                         ? <button className="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white
-                            hover:border-transparent hover:text-white hover:bg-blue-600 mt-4 lg:mt-0"
+                            hover:border-transparent hover:bg-white hover:text-gray-600 mt-4 lg:mt-0"
                                   onClick={async () => {
                                       await firebase.auth().signOut();
                                       navigate("/login", {state: {from: window.location.pathname}});
@@ -75,7 +72,7 @@ export function AppHeader() {
                             Logout
                         </button>
                         : <button className="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white
-                            hover:border-transparent hover:text-white hover:bg-blue-600 mt-4 lg:mt-0"
+                            hover:border-transparent hover:bg-white hover:text-gray-600 mt-4 lg:mt-0"
                                   onClick={() => {
                                       navigate("/login", {state: {from: window.location.pathname}});
                                   }}>
