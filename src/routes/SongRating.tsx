@@ -18,11 +18,11 @@ export function SongRating() {
     let params = useParams();
     let playlistId = params.id;
     let [inputSongs, setInputSongs] = React.useState<MusicWrapper.Song[]>([]);
+    let [inputSongsSortedByCount, setInputSongsSortedByCount] = React.useState<MusicWrapper.Song[]>([]);
     let [inputPlaylist, setInputPlaylist] = React.useState<MusicWrapper.Playlist | null>(null);
     let [matchUp, setMatchUp] = React.useState<RatingPair | null>(null);
 
     let [eloRecords, setEloRecords] = React.useState<Map<string, EloRecord>>(new Map());
-    let [eloRecordsSorted, setEloRecordsSorted] = React.useState<EloRecord[]>([]);
 
     let [firstMatchUpDone, setFirstMatchUpDone] = React.useState(false);
 
@@ -57,20 +57,20 @@ export function SongRating() {
     }, [playlistId]);
 
     useEffect(() => {
-        if (inputSongs.length > 0 && eloRecordsSorted.length > 0 && !firstMatchUpDone) {
+        if (inputSongsSortedByCount.length > 0 && !firstMatchUpDone) {
             getMatchUp();
             setFirstMatchUpDone(true);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [inputSongs, eloRecordsSorted, firstMatchUpDone]);
+    }, [inputSongsSortedByCount, firstMatchUpDone]);
 
 
     useEffect(() => {
-        let recordsByCount = Array.from(eloRecords.values()).sort((a, b) => {
-            return a.ratingCount - b.ratingCount;
+        let inputSongsByCount = Array.from(inputSongs.values()).sort((a, b) => {
+            return (eloRecords.get(a.id)?.rating || 0) - (eloRecords.get(b.id)?.rating || 0);
         });
-        setEloRecordsSorted(recordsByCount);
-    }, [eloRecords]);
+        setInputSongsSortedByCount(inputSongsByCount);
+    }, [inputSongs, eloRecords]);
 
 
     async function createOutputPlaylist(playlist: MusicWrapper.Playlist | null) {
@@ -110,9 +110,8 @@ export function SongRating() {
             candidate = inputSongs[Math.floor(Math.random() * inputSongs.length)];
         } else {
             // otherwise we determine a random song with a ratingCount below the median
-            let median = Math.floor(eloRecordsSorted.length / 2);
-            let candidateRecord = eloRecordsSorted[Math.floor(Math.random() * median)];
-            candidate = inputSongs.find(song => song.id === candidateRecord.songId) || inputSongs[Math.floor(Math.random() * inputSongs.length)];
+            let median = Math.floor(inputSongs.length / 2);
+            candidate = inputSongsSortedByCount[Math.floor(Math.random() * median)];
         }
 
         if (baseline.id === candidate.id) {
