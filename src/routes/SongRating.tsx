@@ -73,18 +73,7 @@ export function SongRating() {
     }, [inputSongs, eloRecords]);
 
 
-    async function createOutputPlaylist(playlist: MusicWrapper.Playlist | null) {
-        if (!playlist) {
-            return;
-        }
-
-        let existingPlaylist = playlist.musicProvider !== MusicWrapper.MusicProvider.AppleMusic && (await MusicWrapper.getInstance().searchPlaylist(`${playlist.name} Sorted`)).find(p => p.description === `Sorted version of ${playlist.name} by Elo Music Rating`);
-        let outputPlaylist = existingPlaylist || await MusicWrapper.getInstance().createPlaylist(`${playlist.name} Sorted`, `Sorted version of ${playlist.name} by Elo Music Rating`, playlist.musicProvider);
-
-        if (!outputPlaylist) {
-            return;
-        }
-
+    async function saveSortedPlaylist(playlist: MusicWrapper.Playlist | null, inputSongs: MusicWrapper.Song[]) {
         let sorted = inputSongs.sort((a, b) => {
             let aRating = eloRecords.get(a.id)?.rating || 0;
             let bRating = eloRecords.get(b.id)?.rating || 0;
@@ -93,7 +82,7 @@ export function SongRating() {
             }
             return aRating > bRating ? -1 : 1;
         });
-        await MusicWrapper.getInstance().updatePlaylist(outputPlaylist, sorted);
+        await MusicWrapper.getInstance().saveSortedPlaylist(playlist, sorted);
     }
 
     function getMatchUp() {
@@ -141,7 +130,7 @@ export function SongRating() {
     return <div>
         <SongRatingHeader inputPlaylist={inputPlaylist}
                           onSave={async () => {
-                              await createOutputPlaylist(inputPlaylist);
+                              await saveSortedPlaylist(inputPlaylist, inputSongs);
                           }}/>
         <div className="grid grid-cols-2 my-2 max-w-xl mx-auto">
             <div className="mx-4 mt-auto">

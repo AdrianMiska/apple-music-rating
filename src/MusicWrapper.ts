@@ -302,7 +302,7 @@ export namespace MusicWrapper {
         }
 
 
-        async unauthorize(provider: MusicWrapper.MusicProvider) {
+        async unauthorize(provider: MusicProvider) {
             switch (provider) {
                 case MusicProvider.AppleMusic:
                     let musicKit = await this.getMusicKit();
@@ -500,6 +500,20 @@ export namespace MusicWrapper {
             }
         }
 
+        async saveSortedPlaylist(playlist: Playlist | null, songs: Song[]) {
+            if (!playlist) {
+                return;
+            }
+
+            let existingPlaylist = playlist.musicProvider !== MusicProvider.AppleMusic && (await this.searchPlaylist(`${playlist.name} Sorted`)).find(p => p.description === `Sorted version of ${playlist.name} by Elo Music Rating`);
+            let outputPlaylist = existingPlaylist || await this.createPlaylist(`${playlist.name} Sorted`, `Sorted version of ${playlist.name} by Elo Music Rating`, playlist.musicProvider);
+
+            if (!outputPlaylist) {
+                return;
+            }
+            await this.updatePlaylist(outputPlaylist, songs);
+        }
+
 
         /**
          * Will filter the songs from the response and return only the ones with a favorite rating.
@@ -552,7 +566,7 @@ export namespace MusicWrapper {
                 nextTracks.items = tracks.items.concat(nextTracks.items);
                 tracks = nextTracks;
             }
-            let favorites = tracks.items.map(track => (new MusicWrapper.Song(track.track)));
+            let favorites = tracks.items.map(track => (new Song(track.track)));
             localStorage.setItem("spotify_favorites", JSON.stringify(favorites));
             localStorage.setItem("spotify_favorites_date", new Date().toISOString());
             return favorites;
