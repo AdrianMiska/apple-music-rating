@@ -1,15 +1,15 @@
 import React, {useEffect} from "react";
 import {PlayIcon, StopIcon} from "@heroicons/react/solid";
-import {MusicWrapper} from "../MusicWrapper";
+import {Song, useMusic} from "../MusicWrapper";
 
 /**
  * A nice-looking, round button which when clicked will play a preview of the song. If the song is already playing, it will stop.
  */
-export function PlayButton(props: { song: MusicWrapper.Song }) {
+export function PlayButton(props: { song: Song }) {
 
     let [isPlaying, setIsPlaying] = React.useState<boolean>(false);
 
-    let music = MusicWrapper.getInstance();
+    let music = useMusic();
 
     music.onPlaybackChange(() => {
         music.isPlaying(props.song).then(setIsPlaying);

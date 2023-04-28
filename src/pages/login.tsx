@@ -2,7 +2,7 @@ import React, {useEffect} from "react";
 import firebase from "firebase/compat/app";
 import {StyledFirebaseAuth} from "../components/StyledFirebaseAuth";
 import firebaseui from "firebaseui";
-import {useLocation, useNavigate} from "react-router-dom";
+import {useRouter} from "next/router";
 
 //TODO add google and apple auth
 const uiConfig: firebaseui.auth.Config = {
@@ -17,20 +17,19 @@ const uiConfig: firebaseui.auth.Config = {
     ],
 }
 
-export function Login() {
+export default function Login() {
 
-    let navigate = useNavigate();
+    let router = useRouter();
 
-    let location = useLocation();
 
     useEffect(() => {
         const unregisterAuthObserver = firebase.auth().onAuthStateChanged(user => {
             localStorage.removeItem("elo-rating.anonymous");
-            if(!!user) navigate((location.state as any).from || "/select-playlist");
+            debugger;
+            if(!!user) router.push((router.query.from as string) || "/select-playlist");
             //TODO migrate local data to firebase
         });
         return () => unregisterAuthObserver(); // Make sure we un-register Firebase observers when the component unmounts.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return <div>
@@ -46,7 +45,7 @@ export function Login() {
                     text-white font-bold py-2 px-4 rounded"
                 onClick={() => {
                     localStorage.setItem("elo-rating.anonymous", "true");
-                    navigate((location.state as any).from || "/select-playlist");
+                    router.push((router.query.from as string) || "/select-playlist");
                 }
                 }>Continue anonymously
         </button>

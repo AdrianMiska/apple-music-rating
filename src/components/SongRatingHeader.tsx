@@ -1,17 +1,21 @@
-import {Link} from "react-router-dom";
 import {ChevronLeftIcon, PlusIcon} from "@heroicons/react/outline";
 import React from "react";
-import {MusicWrapper} from "../MusicWrapper";
+import {Playlist, useMusic} from "../MusicWrapper";
+import Link from "next/link";
 
-export function SongRatingHeader(props: { inputPlaylist: MusicWrapper.Playlist | null, onSave: () => Promise<void> }) {
+export function SongRatingHeader(props: { inputPlaylist?: Playlist, onSave: () => Promise<void> }) {
+
+    let music = useMusic();
+
+
     return <div id="song-rating-header" className="flex relative justify-between items-center my-3">
         <div className="">
 
             <Link
-                to="/select-playlist"
+                href="/select-playlist"
                 className="flex items-center bg-transparent hover:bg-gray-200 text-gray-800 font-semibold hover:text-gray-900 pr-4 rounded"
                 onClick={async () => {
-                    await MusicWrapper.getInstance().stop();
+                    await music.stop();
                 }}>
                 <ChevronLeftIcon className="w-6 h-6 mr-2"/> Back
             </Link>

@@ -1,6 +1,7 @@
-import {Navigate, useLocation} from "react-router-dom";
-import firebase from "firebase/compat/app";
 import {useEffect, useState} from "react";
+import {useRouter} from "next/router";
+import firebase from "firebase/compat/app";
+import 'firebase/compat/auth';
 
 export function RequireAuthentication({children}: { children: JSX.Element }) {
 
@@ -15,22 +16,27 @@ export function RequireAuthentication({children}: { children: JSX.Element }) {
     }, []);
 
     useEffect(() => {
-        if(localStorage.getItem("elo-rating.anonymous") === "true"){
+        if (localStorage.getItem("elo-rating.anonymous") === "true") {
             setIsAuthenticated(true);
             setIsLoading(false);
         }
     }, []);
 
-    let location = useLocation();
+    let router = useRouter();
 
-    if (isLoading) {
+
+    useEffect(() => {
+        if (!isLoading && !isAuthenticated && router.asPath !== '/login') {
+            router.replace({
+                pathname: '/login',
+                query: {from: router.asPath},
+            });
+        }
+    }, [isLoading, isAuthenticated, router]);
+
+    if (isLoading || !isAuthenticated) {
         return <div>Loading...</div>;
-    }
-
-
-    if (!isAuthenticated || location.pathname === "/login") {
-        return <Navigate to="/login" state={{from: location}} replace/>;
     } else {
-        return children;
+        return <>{children}</>;
     }
 }

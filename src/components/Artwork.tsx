@@ -1,12 +1,12 @@
 import React from "react";
-import {MusicWrapper} from "../MusicWrapper";
+import {Artwork as MusicWrapperArtwork} from "../MusicWrapper";
 
 /**
  * Displays album art.
  */
-export function Artwork(props: { artwork: MusicWrapper.Artwork | null }) {
+export function Artwork(props: { artwork: MusicWrapperArtwork | null }) {
 
-    function getUrl(artwork: MusicWrapper.Artwork): string {
+    function getUrl(artwork: MusicWrapperArtwork): string {
         let url = artwork.url;
         url = url.replace("{w}", "500");
         url = url.replace("{h}", "500");

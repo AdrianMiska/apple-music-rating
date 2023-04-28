@@ -1,30 +1,43 @@
 import React, {useEffect} from "react";
-import {calculateElo, EloRecord, getEloRatings} from "../EloUtils";
-import {useParams} from "react-router-dom";
-import {PlaylistElo} from "../components/PlaylistElo";
-import {SongRatingHeader} from "../components/SongRatingHeader";
+import {calculateElo, EloRecord, getEloRatings} from "../../EloUtils";
+import {PlaylistElo} from "../../components/PlaylistElo";
+import {SongRatingHeader} from "../../components/SongRatingHeader";
 import {HeartIcon} from "@heroicons/react/solid";
-import {PlayButton} from "../components/PlayButton";
-import {MusicWrapper} from "../MusicWrapper";
-import {Artwork} from "../components/Artwork";
+import {PlayButton} from "../../components/PlayButton";
+import {Playlist, Song, useMusic} from "../../MusicWrapper";
+import {Artwork} from "../../components/Artwork";
+import {RequireAuthentication} from "../../RequireAuthentication";
+import {RequireAuthorization} from "../../RequireAuthorization";
+import {useRouter} from "next/router";
 
 class RatingPair {
-    constructor(public baseline: MusicWrapper.Song, public candidate: MusicWrapper.Song) {
+    constructor(public baseline: Song, public candidate: Song) {
     }
 }
 
-export function SongRating() {
+export default function SongRatingWrapper() {
 
-    let params = useParams();
-    let playlistId = params.id;
-    let [inputSongs, setInputSongs] = React.useState<MusicWrapper.Song[]>([]);
-    let [inputSongsSortedByCount, setInputSongsSortedByCount] = React.useState<MusicWrapper.Song[]>([]);
-    let [inputPlaylist, setInputPlaylist] = React.useState<MusicWrapper.Playlist | null>(null);
-    let [matchUp, setMatchUp] = React.useState<RatingPair | null>(null);
+    return <RequireAuthentication>
+        <RequireAuthorization>
+            <SongRating/>
+        </RequireAuthorization>
+    </RequireAuthentication>
+}
+
+function SongRating(){
+
+    const router = useRouter()
+    let playlistId = router.query.id as string;
+    let [inputSongs, setInputSongs] = React.useState<Song[]>([]);
+    let [inputSongsSortedByCount, setInputSongsSortedByCount] = React.useState<Song[]>([]);
+    let [inputPlaylist, setInputPlaylist] = React.useState<Playlist>();
+    let [matchUp, setMatchUp] = React.useState<RatingPair>();
 
     let [eloRecords, setEloRecords] = React.useState<Map<string, EloRecord>>(new Map());
 
     let [firstMatchUpDone, setFirstMatchUpDone] = React.useState(false);
+
+    let music = useMusic();
 
     useEffect(() => {
         if (!playlistId) {
@@ -34,9 +47,7 @@ export function SongRating() {
             setEloRecords(new Map(Object.entries(ratings)));
         });
 
-        return () => {
-            unsub && unsub();
-        }
+        return () => unsub?.()
 
     }, [playlistId]);
 
@@ -44,8 +55,8 @@ export function SongRating() {
         if (!playlistId) {
             return;
         }
-        MusicWrapper.getInstance().getPlaylist(playlistId)
-            .then((playlist: MusicWrapper.Playlist | null) => {
+        music.getPlaylist(playlistId)
+            .then((playlist?: Playlist) => {
                 setInputPlaylist(playlist);
                 let songs = playlist?.tracks || [];
                 //duplicates mess everything up, so we remove them
@@ -61,7 +72,6 @@ export function SongRating() {
             getMatchUp();
             setFirstMatchUpDone(true);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [inputSongsSortedByCount, firstMatchUpDone]);
 
 
@@ -73,7 +83,7 @@ export function SongRating() {
     }, [inputSongs, eloRecords]);
 
 
-    async function saveSortedPlaylist(playlist: MusicWrapper.Playlist | null, inputSongs: MusicWrapper.Song[]) {
+    async function saveSortedPlaylist(inputSongs: Song[], playlist?: Playlist) {
         let sorted = inputSongs.sort((a, b) => {
             let aRating = eloRecords.get(a.id)?.rating || 0;
             let bRating = eloRecords.get(b.id)?.rating || 0;
@@ -82,7 +92,7 @@ export function SongRating() {
             }
             return aRating > bRating ? -1 : 1;
         });
-        await MusicWrapper.getInstance().saveSortedPlaylist(playlist, sorted);
+        await music.saveSortedPlaylist(sorted, playlist);
     }
 
     function getMatchUp() {
@@ -92,7 +102,7 @@ export function SongRating() {
         }
 
         let baseline = inputSongs[Math.floor(Math.random() * inputSongs.length)];
-        let candidate: MusicWrapper.Song;
+        let candidate: Song;
 
         if (Math.random() < 0.5) {
             // in 50% of the cases, we pick a random song from the playlist
@@ -124,13 +134,12 @@ export function SongRating() {
         return <div>Loading...</div>;
     }
 
-
     //TODO display a message that data is local in case of anonymous users with an option to sign up
 
     return <div>
         <SongRatingHeader inputPlaylist={inputPlaylist}
                           onSave={async () => {
-                              await saveSortedPlaylist(inputPlaylist, inputSongs);
+                              await saveSortedPlaylist(inputSongs, inputPlaylist);
                           }}/>
         <div className="grid grid-cols-2 my-2 max-w-xl mx-auto">
             <div className="mx-4 mt-auto">
@@ -152,7 +161,7 @@ export function SongRating() {
                     <button
                         className="bg-gray-500 border-0 text-white hover:bg-gray-700 rounded-full h-10 w-10 p-2"
                         onClick={async () => {
-                            await MusicWrapper.getInstance().stop();
+                            await music.stop();
                             await calculateElo(playlistId!, matchUp!.baseline, matchUp!.candidate, "baseline");
                             getMatchUp();
                         }
@@ -166,7 +175,7 @@ export function SongRating() {
                 <button
                     className="bg-gray-500 border-0 text-white hover:bg-gray-700 rounded-full h-10 w-10 p-2 font-bold"
                     onClick={async () => {
-                        await MusicWrapper.getInstance().stop();
+                        await music.stop();
                         await calculateElo(playlistId!, matchUp!.baseline, matchUp!.candidate, "tie");
                         getMatchUp();
                     }}>Tie
@@ -179,7 +188,7 @@ export function SongRating() {
                         className="bg-gray-500 border-0 text-white hover:bg-gray-700 rounded-full h-10 w-10 p-2"
                         onClick={async () => {
 
-                            await MusicWrapper.getInstance().stop();
+                            await music.stop();
                             await calculateElo(playlistId!, matchUp!.baseline, matchUp!.candidate, "candidate");
                             getMatchUp();
                         }
@@ -202,4 +211,5 @@ export function SongRating() {
         </div>
         <PlaylistElo playlistId={playlistId} songs={inputSongs} ratings={eloRecords}/>
     </div>
+
 }

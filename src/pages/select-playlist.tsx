@@ -1,15 +1,16 @@
 import React, {useEffect} from "react";
-import {Link} from "react-router-dom";
-import {MusicWrapper} from "../MusicWrapper";
+import {useMusic, MusicProvider, Playlist} from "../MusicWrapper";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faSpotify} from "@fortawesome/free-brands-svg-icons";
 import {faMusic} from "@fortawesome/free-solid-svg-icons";
-import MusicProvider = MusicWrapper.MusicProvider;
+import Link from "next/link";
+import {RequireAuthentication} from "../RequireAuthentication";
+import {RequireAuthorization} from "../RequireAuthorization";
 
 /**
  * A clickable tile which represents a playlist. It has a nice hover effect and clicking the tile itself will take you to the song-rating page.
  */
-function PlaylistTile(props: { musicProvider: MusicWrapper.MusicProvider, name: string, target: string }) {
+export function PlaylistTile(props: { musicProvider: MusicProvider, name: string, target: string }) {
 
     function getIcon() {
         switch (props.musicProvider) {
@@ -20,31 +21,37 @@ function PlaylistTile(props: { musicProvider: MusicWrapper.MusicProvider, name: 
         }
     }
 
-    return <div className="w-1/2 md:w-1/3 lg:w-1/4 my-2">
-        <Link
-            to={props.target}
-            className="flex mx-2 px-4 py-5 h-full cursor-pointer bg-white rounded-lg shadow-lg
+    return <RequireAuthentication>
+        <RequireAuthorization>
+            <div className="w-1/2 md:w-1/3 lg:w-1/4 my-2">
+                <Link
+                    href={props.target}
+                    className="flex mx-2 px-4 py-5 h-full cursor-pointer bg-white rounded-lg shadow-lg
             hover:bg-gray-100 hover:shadow-md justify-evenly break-words">
-            {getIcon()}
+                    {getIcon()}
 
-            <p className="font-bold text-xl my-auto">
-                {props.name}
-            </p>
+                    <p className="font-bold text-xl my-auto">
+                        {props.name}
+                    </p>
 
-        </Link>
+                </Link>
 
-    </div>;
+            </div>
+        </RequireAuthorization>
+    </RequireAuthentication>;
 }
 
-export function SelectPlaylist() {
+export default function SelectPlaylist() {
 
     let [searchTerm, setSearchTerm] = React.useState<string>("");
-    let [searchResults, setSearchResults] = React.useState<MusicWrapper.Playlist[]>([]);
+    let [searchResults, setSearchResults] = React.useState<Playlist[]>([]);
     let [appleMusicUser, setAppleMusicUser] = React.useState<boolean>(false);
     let [spotifyUser, setSpotifyUser] = React.useState<boolean>(false);
 
+    let music = useMusic();
+
     useEffect(() => {
-        MusicWrapper.getInstance().getAuthorizations().then((authorizations) => {
+        music.getAuthorizations().then((authorizations) => {
             if (authorizations.includes(MusicProvider.AppleMusic)) {
                 setAppleMusicUser(true);
             }
@@ -55,7 +62,7 @@ export function SelectPlaylist() {
     }, []);
 
     useEffect(() => {
-        MusicWrapper.getInstance().searchPlaylist(searchTerm).then((results) => {
+        music.searchPlaylist(searchTerm).then((results) => {
             setSearchResults(results);
         });
     }, [searchTerm]);
@@ -65,11 +72,11 @@ export function SelectPlaylist() {
         <div className="my-3">
             <div className="flex flex-row justify-center">
                 {appleMusicUser &&
-                    <PlaylistTile musicProvider={MusicWrapper.MusicProvider.AppleMusic}
+                    <PlaylistTile musicProvider={MusicProvider.AppleMusic}
                                   name="Favorites"
                                   target="/song-rating/apple-music-favorites"/>}
                 {spotifyUser &&
-                    <PlaylistTile musicProvider={MusicWrapper.MusicProvider.Spotify}
+                    <PlaylistTile musicProvider={MusicProvider.Spotify}
                                   name="Favorites"
                                   target="/song-rating/spotify-saved-tracks"/>}
             </div>

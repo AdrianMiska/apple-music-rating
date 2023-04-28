@@ -1,15 +1,17 @@
-import {Navigate, useLocation} from "react-router-dom";
-import {MusicWrapper} from "./MusicWrapper";
+import {useMusic} from "./MusicWrapper";
 import {useEffect, useState} from "react";
+import {useRouter} from "next/router";
 
 export function RequireAuthorization({children}: { children: JSX.Element }) {
 
     let [isAuthorized, setIsAuthorized] = useState(false);
     let [isLoading, setIsLoading] = useState(true);
 
+    let musicWrapper = useMusic();
+
     useEffect(() => {
         let authorized = async () => {
-            let authorizations = await MusicWrapper.getInstance().getAuthorizations();
+            let authorizations = await musicWrapper.getAuthorizations();
             setIsAuthorized(authorizations.length > 0);
         }
         authorized().then(() => {
@@ -17,15 +19,20 @@ export function RequireAuthorization({children}: { children: JSX.Element }) {
         });
     }, []);
 
-    let location = useLocation();
+    let router = useRouter();
 
-    if (isLoading) {
+    useEffect(() => {
+        if (!isLoading && !isAuthorized && router.asPath !== '/authorize') {
+            router.replace({
+                pathname: '/authorize',
+                query: {from: router.asPath},
+            });
+        }
+    }, [isLoading, isAuthorized, router]);
+
+    if (isLoading || !isAuthorized) {
         return <div>Loading...</div>;
-    }
-
-    if (!isAuthorized || location.pathname === "/authorize") {
-        return <Navigate to="/authorize" state={{from: location}} replace/>;
     } else {
-        return children;
+        return <>{children}</>;
     }
 }

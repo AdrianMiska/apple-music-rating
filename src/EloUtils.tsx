@@ -2,10 +2,11 @@
  * Gets the songs ELO rating from local storage
  */
 import firebase from "firebase/compat/app";
+import 'firebase/compat/auth';
 import "firebase/firestore";
 import {collection, doc, getDoc, getFirestore, onSnapshot, setDoc} from "firebase/firestore";
-import {MusicWrapper} from "./MusicWrapper";
 import Unsubscribe = firebase.Unsubscribe;
+import {Song} from "./MusicWrapper";
 
 export class EloRecord {
     public songId: string;
@@ -19,7 +20,7 @@ export class EloRecord {
     }
 }
 
-export async function setEloRating(playlistId: string, song: MusicWrapper.Song, rating: number, ratingCount: number) {
+export async function setEloRating(playlistId: string, song: Song, rating: number, ratingCount: number) {
     let firebaseUid = firebase.auth().currentUser?.uid;
     if (!!firebaseUid) {
 
@@ -34,7 +35,7 @@ export async function setEloRating(playlistId: string, song: MusicWrapper.Song, 
     }
 }
 
-export async function getEloRating(playlistId: string, song: MusicWrapper.Song): Promise<EloRecord> {
+export async function getEloRating(playlistId: string, song: Song): Promise<EloRecord> {
     let firebaseUid = firebase.auth().currentUser?.uid;
     if (!!firebaseUid) {
 
@@ -50,7 +51,7 @@ export async function getEloRating(playlistId: string, song: MusicWrapper.Song):
     }
 }
 
-export function getEloRatings(playlistId: string, callback: (ratings: { [songId: string]: EloRecord }) => void): Unsubscribe | null {
+export function getEloRatings(playlistId: string, callback: (ratings: { [songId: string]: EloRecord }) => void): Unsubscribe | undefined {
     let firebaseUid = firebase.auth().currentUser?.uid;
     if (!!firebaseUid) {
 
@@ -75,11 +76,10 @@ export function getEloRatings(playlistId: string, callback: (ratings: { [songId:
 
         //TODO this only executes once. how to call callback everytime local storage changes?
         callback(songs);
-        return null;
     }
 }
 
-export async function calculateElo(playlistId: string, baseline: MusicWrapper.Song, candidate: MusicWrapper.Song, winner: "baseline" | "candidate" | "tie") {
+export async function calculateElo(playlistId: string, baseline: Song, candidate: Song, winner: "baseline" | "candidate" | "tie") {
     const baselineRecord = await getEloRating(playlistId, baseline);
     const candidateRecord = await getEloRating(playlistId, candidate);
     const expectedBaseline = 1 / (1 + Math.pow(10, (candidateRecord.rating - baselineRecord.rating) / 400));

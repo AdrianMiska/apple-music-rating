@@ -1,11 +1,11 @@
 import React from "react";
 import {Artwork} from "./Artwork";
-import {MusicWrapper} from "../MusicWrapper";
+import {Song} from "../MusicWrapper";
 
 /**
  * A song to be displayed as part of a playlist.
  */
-export function PlaylistSong(props: { song: MusicWrapper.Song, rating: number }) {
+export function PlaylistSong(props: { song: Song, rating: number }) {
 
     return <div className="flex flex-row items-center my-2 max-w-2xl mx-auto">
         <div className="w-1/6">

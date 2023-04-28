@@ -1,9 +1,10 @@
-import {useNavigate} from "react-router-dom";
+import React from 'react';
 import {MusicNoteIcon} from "@heroicons/react/solid";
+import {useRouter} from "next/router";
 
-export function LandingPage() {
+export default function Index() {
 
-    let navigate = useNavigate();
+    let router = useRouter();
 
     return <div className="text-center">
         <h1 className="text-2xl font-bold">
@@ -21,9 +22,11 @@ export function LandingPage() {
         <button
             className="mx-auto flex items-center py-2 pr-4 rounded bg-blue-500 text-white font-semibold hover:bg-blue-700"
             onClick={() => {
-                navigate("/select-playlist");
+                router.push("/select-playlist");
             }}>
             <MusicNoteIcon className="w-4 h-4 mr-2 ml-3"/> Let's go!
         </button>
-    </div>;
+    </div>
+
+
 }

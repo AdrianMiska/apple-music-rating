@@ -1,6 +1,8 @@
 import React, {useEffect, useRef, useState} from "react";
-import firebase from "firebase/compat/app";
-import {Link, useNavigate} from "react-router-dom";
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
+import Link from "next/link";
+import {useRouter} from "next/router";
 
 /**
  * Header with navbar and hamburger menu.
@@ -29,16 +31,15 @@ export function AppHeader() {
         });
     }, []);
 
-    let navigate = useNavigate();
-
+    const router = useRouter();
 
     return <header>
         <nav className="flex items-center justify-between flex-wrap bg-blue-700 p-3 overflow-hidden">
             <div className="flex items-center flex-shrink-0 text-white mr-6">
-                    <Link to="/"
-                        className="font-semibold text-xl tracking-tight">
-                        Music Rating
-                    </Link>
+                <Link href="/"
+                      className="font-semibold text-xl tracking-tight">
+                    Music Rating
+                </Link>
             </div>
             <div className="block lg:hidden">
                 <button className="flex items-center px-3 py-2 border rounded text-white border-white
@@ -56,8 +57,8 @@ export function AppHeader() {
                 <div className="text-sm mb-4 lg:mb-0 lg:ml-auto mt-4 lg:mt-0">
                 </div>
                 <div className="text-sm mb-4 lg:mb-0">
-                    <Link to="/authorize"
-                       className="lg:inline-block text-white hover:text-white lg:mr-4">
+                    <Link href="/authorize"
+                          className="lg:inline-block text-white hover:text-white lg:mr-4">
                         Manage Streaming Providers
                     </Link>
                 </div>
@@ -67,14 +68,14 @@ export function AppHeader() {
                             hover:border-transparent hover:bg-white hover:text-gray-600 mt-4 lg:mt-0"
                                   onClick={async () => {
                                       await firebase.auth().signOut();
-                                      navigate("/login", {state: {from: window.location.pathname}});
+                                      await router.push("/login");
                                   }}>
                             Logout
                         </button>
                         : <button className="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white
                             hover:border-transparent hover:bg-white hover:text-gray-600 mt-4 lg:mt-0"
-                                  onClick={() => {
-                                      navigate("/login", {state: {from: window.location.pathname}});
+                                  onClick={async () => {
+                                      await router.push("/login");
                                   }}>
                             Create Account
                         </button>
