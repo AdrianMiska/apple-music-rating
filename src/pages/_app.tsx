@@ -1,7 +1,6 @@
 import '../../styles/globals.css'
 
 import {AppHeader} from "../components/AppHeader";
-import Head from "next/head";
 import firebase from "firebase/compat/app";
 
 const firebaseConfig = {
@@ -20,9 +19,6 @@ export default function MyApp({Component, pageProps}: { Component: any, pageProp
     }
 
     return <div className="text-center">
-        <Head>
-            <meta name="viewport" content="viewport-fit=cover"/>
-        </Head>
         <AppHeader/>
         <div className="m-3">
             <Component {...pageProps} />

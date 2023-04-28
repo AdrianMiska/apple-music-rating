@@ -18,8 +18,7 @@ export function Artwork(props: { artwork: MusicWrapperArtwork | null }) {
         <div className="flex aspect-square">
             {props.artwork !== null
                 ? <img src={getUrl(props.artwork)}
-                       className="object-scale-down max-w-full max-h-full"
-                       style={{width: "300px", height: "300px"}}
+                       className="object-scale-down w-full h-auto"
                        loading="lazy"
                        alt="Album art"/>
                 : <div className="text-center w-full h-full">
