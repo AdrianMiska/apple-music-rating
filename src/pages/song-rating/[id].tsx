@@ -2,7 +2,7 @@ import React, {useEffect} from "react";
 import {calculateElo, EloRecord, getEloRatings} from "../../EloUtils";
 import {PlaylistElo} from "../../components/PlaylistElo";
 import {SongRatingHeader} from "../../components/SongRatingHeader";
-import {HeartIcon} from "@heroicons/react/solid";
+import {HeartIcon} from "@heroicons/react/24/solid";
 import {PlayButton} from "../../components/PlayButton";
 import {Playlist, Song, useMusic} from "../../MusicWrapper";
 import {Artwork} from "../../components/Artwork";

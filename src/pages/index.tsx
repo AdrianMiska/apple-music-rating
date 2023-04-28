@@ -1,5 +1,5 @@
 import React from 'react';
-import {MusicNoteIcon} from "@heroicons/react/solid";
+import {MusicalNoteIcon} from "@heroicons/react/24/solid";
 import {useRouter} from "next/router";
 
 export default function Index() {
@@ -24,7 +24,7 @@ export default function Index() {
             onClick={() => {
                 router.push("/select-playlist");
             }}>
-            <MusicNoteIcon className="w-4 h-4 mr-2 ml-3"/> Let's go!
+            <MusicalNoteIcon className="w-4 h-4 mr-2 ml-3"/> Let's go!
         </button>
     </div>
 

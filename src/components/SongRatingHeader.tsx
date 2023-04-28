@@ -1,4 +1,4 @@
-import {ChevronLeftIcon, PlusIcon} from "@heroicons/react/outline";
+import {ChevronLeftIcon, PlusIcon} from "@heroicons/react/24/outline";
 import React from "react";
 import {Playlist, useMusic} from "../MusicWrapper";
 import Link from "next/link";

@@ -2,35 +2,39 @@
   "name": "apple-music-rating",
   "version": "0.1.0",
   "private": true,
-  "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^6.1.2",
-    "@fortawesome/free-brands-svg-icons": "^6.1.2",
-    "@fortawesome/free-regular-svg-icons": "^6.1.2",
-    "@fortawesome/free-solid-svg-icons": "^6.1.2",
-    "@fortawesome/react-fontawesome": "^0.2.0",
-    "@heroicons/react": "^1.0.6",
-    "@sentry/react": "^7.9.0",
-    "@sentry/tracing": "^7.9.0",
-    "@types/jest": "^28.1.6",
-    "@types/musickit-js": "^1.0.3",
-    "@types/node": "^16.11.39",
-    "@types/react": "^18.0.15",
-    "@types/react-dom": "^18.0.6",
-    "firebase": "^9.8.4",
-    "firebaseui": "^6.0.1",
-    "next": "^13.3.1",
-    "pkce-challenge": "^3.0.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "spotify-web-api-js": "^1.5.2",
-    "typescript": "^4.7.4",
-    "use-debounce": "^8.0.1",
-    "web-vitals": "^2.1.4"
-  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.4.0",
+    "@fortawesome/free-brands-svg-icons": "^6.4.0",
+    "@fortawesome/free-regular-svg-icons": "^6.4.0",
+    "@fortawesome/free-solid-svg-icons": "^6.4.0",
+    "@fortawesome/react-fontawesome": "^0.2.0",
+    "@heroicons/react": "^2.0.17",
+    "@sentry/react": "^7.50.0",
+    "@sentry/tracing": "^7.50.0",
+    "@tailwindcss/line-clamp": "^0.4.4",
+    "@types/jest": "^29.5.1",
+    "@types/musickit-js": "^1.0.5",
+    "@types/node": "^18.16.2",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.1",
+    "autoprefixer": "^10.4.14",
+    "firebase": "^9.21.0",
+    "firebaseui": "^6.0.2",
+    "next": "^13.3.1",
+    "pkce-challenge": "^3.1.0",
+    "postcss": "^8.4.23",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "spotify-web-api-js": "^1.5.2",
+    "tailwindcss": "^3.3.2",
+    "typescript": "^5.0.4",
+    "use-debounce": "^9.0.4",
+    "web-vitals": "^3.3.1"
   },
   "eslintConfig": {
     "extends": [
@@ -49,15 +53,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "@svgr/webpack": "^6.2.1",
-    "@tailwindcss/line-clamp": "^0.4.0",
-    "autoprefixer": "^10.4.7",
-    "postcss": "^8.4.14",
-    "tailwindcss": "^3.1.8"
-  },
-  "overrides": {
-    "@svgr/webpack": "$@svgr/webpack"
   }
 }

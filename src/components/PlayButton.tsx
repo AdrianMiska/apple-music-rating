@@ -1,5 +1,5 @@
 import React, {useEffect} from "react";
-import {PlayIcon, StopIcon} from "@heroicons/react/solid";
+import {PlayIcon, StopIcon} from "@heroicons/react/24/solid";
 import {Song, useMusic} from "../MusicWrapper";
 
 /**
