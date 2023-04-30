@@ -144,10 +144,10 @@ export async function calculateElo(
   const candidateRecord = await getEloRating(playlistId, candidate);
   const expectedBaseline =
     1 /
-    (1 + Math.pow(10, (candidateRecord.rating - baselineRecord.rating) / 400));
+    (1 + Math.pow(10, (candidateRecord.rating - baselineRecord.rating) / 480));
   const expectedCandidate =
     1 /
-    (1 + Math.pow(10, (baselineRecord.rating - candidateRecord.rating) / 400));
+    (1 + Math.pow(10, (baselineRecord.rating - candidateRecord.rating) / 480));
   const scoreBaseline = winner === "baseline" ? 1 : winner === "tie" ? 0.5 : 0;
   const scoreCandidate =
     winner === "candidate" ? 1 : winner === "tie" ? 0.5 : 0;

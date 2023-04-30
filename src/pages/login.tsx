@@ -3,6 +3,7 @@ import firebase from "firebase/compat/app";
 import {StyledFirebaseAuth} from "../components/StyledFirebaseAuth";
 import firebaseui from "firebaseui";
 import {useRouter} from "next/router";
+import Head from "next/head";
 
 //TODO add google and apple auth
 const uiConfig: firebaseui.auth.Config = {
@@ -34,15 +35,20 @@ export default function Login() {
   }, []);
 
   return (
-    <div>
+    <div className="mt-12 space-y-4">
+      <Head>
+        <title>EloTunes - Discover Your Favorite Songs</title>
+        <meta
+          name="description"
+          content="Log in to EloTunes to rate your music library and create custom playlists based on your preferences."
+        />
+      </Head>
       <StyledFirebaseAuth uiConfig={uiConfig} firebaseAuth={firebase.auth()} />
-      <p> Or </p>
+      <p>{"If you don't want to log in, you can continue anonymously."}</p>{" "}
       <p>
-        If you don&apos;t want to log in, you can continue anonymously. However,
-        your Elo ratings will only be stored in your browser, not transferable
-        to other devices and lost if you clear your browser cache.
+        {"However, your Elo ratings will only be stored in your browser, not transferable to other devices " +
+          "and lost if you clear your browser cache."}
       </p>
-
       <button
         className="rounded bg-slate-500
                     px-4 py-2 font-bold text-white hover:bg-slate-700"

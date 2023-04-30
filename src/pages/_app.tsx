@@ -2,6 +2,8 @@ import "../../styles/globals.css";
 
 import { AppHeader } from "../components/AppHeader";
 import firebase from "firebase/compat/app";
+import React from "react";
+import { AppFooter } from "../components/appFooter";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -24,11 +26,12 @@ export default function MyApp({
   }
 
   return (
-    <div className="text-center">
+    <div className="bg-gray-50 text-center">
       <AppHeader />
-      <div className="m-3">
+      <main className="mx-auto min-h-screen max-w-7xl px-4 sm:px-6 lg:px-8">
         <Component {...pageProps} />
-      </div>
+      </main>
+      <AppFooter />
     </div>
   );
 }

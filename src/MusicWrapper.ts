@@ -554,14 +554,13 @@ class Music {
       playlist.musicProvider !== MusicProvider.AppleMusic &&
       (await this.searchPlaylist(`${playlist.name} Sorted`)).find(
         (p) =>
-          p.description ===
-          `Sorted version of ${playlist.name} by Elo Music Rating`
+          p.description === `Sorted version of ${playlist.name} by EloTunes`
       );
     let outputPlaylist =
       existingPlaylist ||
       (await this.createPlaylist(
         `${playlist.name} Sorted`,
-        `Sorted version of ${playlist.name} by Elo Music Rating`,
+        `Sorted version of ${playlist.name} by EloTunes`,
         playlist.musicProvider
       ));
 

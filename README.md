@@ -1,20 +1,16 @@
-# Elo Music Rating
+# EloTunes
 
-A web application for rating music. The core idea is to give you a choice between two songs, you choose the one you prefer.
-The songs have an Elo score associated with them which is updated every time you rate a song. Over time the Elo score will
-reflect the songs you like the most, so you can export them to a new, ordered playlist.
+EloTunes is a web application that allows you to rate your music library and discover your favorite songs. The app uses
+an Elo score system to sort your playlists, so you can easily find and listen to your favorite tunes.
 
 ## Current State
 
-At the moment the application is in its earliest stages of development and barely working. I'm still trying things out and adding new features.
-
-My current priorities are:
-* Design
-* Adding Auth providers
-* Adding Spotify support
+EloTunes was created by me as a personal project.
+At the moment the application is in its earliest stages of development and barely working. I'm still trying things out
+and adding new features.
 
 ## Local Development
 
 If you want to start the app yourself, you will need a MusicKit developer token and edit the Firebase config.
 
-Run `npm install` and then `npm start`. The app will then run on port 3000.
+Run `yarn install` and then `yarn dev`. The app will then run on port 3000.
