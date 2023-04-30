@@ -1,18 +1,17 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { calculateElo, EloRecord, getEloRatings } from "../../EloUtils";
 import { PlaylistElo } from "../../components/PlaylistElo";
 import { SongRatingHeader } from "../../components/SongRatingHeader";
-import { HeartIcon } from "@heroicons/react/24/solid";
-import { PlayButton } from "../../components/PlayButton";
 import { Playlist, Song, useMusic } from "../../MusicWrapper";
-import { Artwork } from "../../components/Artwork";
 import { RequireAuthentication } from "../../RequireAuthentication";
 import { RequireAuthorization } from "../../RequireAuthorization";
 import { useRouter } from "next/router";
+import { MatchUpPlayer } from "../../components/matchUpPlayer";
 
-class RatingPair {
-  constructor(public baseline: Song, public candidate: Song) {}
-}
+export type RatingPair = {
+  baseline: Song;
+  candidate: Song;
+};
 
 export default function SongRatingWrapper() {
   return (
@@ -27,18 +26,11 @@ export default function SongRatingWrapper() {
 function SongRating() {
   const router = useRouter();
   let playlistId = router.query.id as string;
-  let [inputSongs, setInputSongs] = React.useState<Song[]>([]);
-  let [inputSongsSortedByCount, setInputSongsSortedByCount] = React.useState<
-    Song[]
-  >([]);
-  let [inputPlaylist, setInputPlaylist] = React.useState<Playlist>();
+
+  let [playlist, setPlaylist] = React.useState<Playlist>();
   let [matchUp, setMatchUp] = React.useState<RatingPair>();
 
-  let [eloRecords, setEloRecords] = React.useState<Map<string, EloRecord>>(
-    new Map()
-  );
-
-  let [firstMatchUpDone, setFirstMatchUpDone] = React.useState(false);
+  let [eloRecords, setEloRecords] = React.useState<Map<string, EloRecord>>();
 
   let music = useMusic();
 
@@ -56,42 +48,81 @@ function SongRating() {
     return () => unsub?.();
   }, [playlistId]);
 
+  let [songs, setSongs] = React.useState<Song[]>([]);
+
+  // has to be an effect, because we need to wait for the playlist to load
   useEffect(() => {
     if (!playlistId) {
       return;
     }
     music.getPlaylist(playlistId).then((playlist?: Playlist) => {
-      setInputPlaylist(playlist);
+      setPlaylist(playlist);
       let songs = playlist?.tracks || [];
       //duplicates mess everything up, so we remove them
       let deduplicatedSongs = songs.filter((song, index) => {
         return songs.findIndex((s) => s.id === song.id) === index;
       });
-      setInputSongs(deduplicatedSongs);
+      setSongs(deduplicatedSongs);
     });
-  }, [playlistId]);
+  }, [music, playlistId]);
 
-  useEffect(() => {
-    if (inputSongsSortedByCount.length > 0 && !firstMatchUpDone) {
-      getMatchUp();
-      setFirstMatchUpDone(true);
+  let inputSongsSortedByCount = useMemo(() => {
+    if (!eloRecords) {
+      return [];
     }
-  }, [inputSongsSortedByCount, firstMatchUpDone]);
-
-  useEffect(() => {
-    let inputSongsByCount = Array.from(inputSongs.values()).sort((a, b) => {
+    let inputSongsByCount = [...songs];
+    inputSongsByCount.sort((a, b) => {
       return (
-        (eloRecords.get(a.id)?.rating || 0) -
-        (eloRecords.get(b.id)?.rating || 0)
+        (eloRecords?.get(a.id)?.ratingCount || 0) -
+        (eloRecords?.get(b.id)?.ratingCount || 0)
       );
     });
-    setInputSongsSortedByCount(inputSongsByCount);
-  }, [inputSongs, eloRecords]);
+    return inputSongsByCount;
+  }, [songs, eloRecords]);
+
+  const getMatchUp = useCallback(() => {
+    if (songs.length === 0) {
+      return null;
+    }
+
+    let baseline = songs[Math.floor(Math.random() * songs.length)];
+    let candidate: Song;
+
+    if (Math.random() < 0.3) {
+      // in 30% of the cases, we pick a random song from the playlist
+      candidate = songs[Math.floor(Math.random() * songs.length)];
+    } else {
+      // otherwise we determine a random song with a ratingCount below the median
+      let median = Math.floor(songs.length / 2);
+      candidate = inputSongsSortedByCount[Math.floor(Math.random() * median)];
+    }
+
+    if (baseline.id === candidate.id) {
+      let candidateIndex = songs.indexOf(candidate);
+      if (candidateIndex + 1 < songs.length) {
+        candidate = songs[candidateIndex + 1];
+      } else if (candidateIndex - 1 >= 0) {
+        candidate = songs[candidateIndex - 1];
+      }
+    }
+    if (Math.random() < 0.5) {
+      setMatchUp({ baseline, candidate });
+    } else {
+      setMatchUp({ baseline: candidate, candidate: baseline });
+    }
+  }, [songs, inputSongsSortedByCount]);
+
+  useEffect(() => {
+    if (inputSongsSortedByCount.length > 0 && !matchUp) {
+      // initial match up
+      getMatchUp();
+    }
+  }, [matchUp, getMatchUp, inputSongsSortedByCount]);
 
   async function saveSortedPlaylist(inputSongs: Song[], playlist?: Playlist) {
     let sorted = inputSongs.sort((a, b) => {
-      let aRating = eloRecords.get(a.id)?.rating || 0;
-      let bRating = eloRecords.get(b.id)?.rating || 0;
+      let aRating = eloRecords?.get(a.id)?.rating || 0;
+      let bRating = eloRecords?.get(b.id)?.rating || 0;
       if (aRating === bRating) {
         return 0;
       }
@@ -100,41 +131,20 @@ function SongRating() {
     await music.saveSortedPlaylist(sorted, playlist);
   }
 
-  function getMatchUp() {
-    if (inputSongs.length === 0) {
-      return null;
-    }
-
-    let baseline = inputSongs[Math.floor(Math.random() * inputSongs.length)];
-    let candidate: Song;
-
-    if (Math.random() < 0.5) {
-      // in 50% of the cases, we pick a random song from the playlist
-      candidate = inputSongs[Math.floor(Math.random() * inputSongs.length)];
-    } else {
-      // otherwise we determine a random song with a ratingCount below the median
-      let median = Math.floor(inputSongs.length / 2);
-      candidate = inputSongsSortedByCount[Math.floor(Math.random() * median)];
-    }
-
-    if (baseline.id === candidate.id) {
-      let candidateIndex = inputSongs.indexOf(candidate);
-      if (candidateIndex + 1 < inputSongs.length) {
-        candidate = inputSongs[candidateIndex + 1];
-      } else if (candidateIndex - 1 >= 0) {
-        candidate = inputSongs[candidateIndex - 1];
-      }
-    }
-    if (Math.random() < 0.5) {
-      setMatchUp(new RatingPair(baseline, candidate));
-    } else {
-      setMatchUp(new RatingPair(candidate, baseline));
-    }
+  async function processResult(winner: "baseline" | "candidate" | "tie") {
+    await music.stop();
+    await calculateElo(
+      playlistId!,
+      matchUp!.baseline,
+      matchUp!.candidate,
+      winner
+    );
+    getMatchUp();
   }
 
   //TODO handle empty playlist
 
-  if (!playlistId || !inputSongs.length || !matchUp) {
+  if (!playlistId || !songs.length || !matchUp || !eloRecords) {
     return <div>Loading...</div>;
   }
 
@@ -143,102 +153,15 @@ function SongRating() {
   return (
     <div>
       <SongRatingHeader
-        inputPlaylist={inputPlaylist}
+        inputPlaylist={playlist}
         onSave={async () => {
-          await saveSortedPlaylist(inputSongs, inputPlaylist);
+          await saveSortedPlaylist(songs, playlist);
         }}
       />
-      <div className="mx-auto my-2 grid max-w-xl grid-cols-2">
-        <div className="mx-4 mt-auto">
-          <Artwork artwork={matchUp.baseline.artwork || null} />
-        </div>
-        <div className="mx-4 mt-auto">
-          <Artwork artwork={matchUp.candidate.artwork || null} />
-        </div>
 
-        <h1 className="m-2 text-center text-xl font-bold">
-          {matchUp.baseline.title}
-        </h1>
-        <h1 className="m-2 text-center text-xl font-bold">
-          {matchUp.candidate.title}
-        </h1>
+      <MatchUpPlayer processResult={processResult} matchUp={matchUp} />
 
-        <h2 className="mx-2 text-center text-sm font-semibold">
-          {matchUp.baseline.artist}
-        </h2>
-        <h2 className="mx-2 text-center text-sm font-semibold">
-          {matchUp.candidate.artist}
-        </h2>
-      </div>
-      <div className="mx-auto my-2 flex max-w-xl flex-row">
-        <div className="flex w-full flex-col items-center">
-          <div className="flex flex-row items-center">
-            <button
-              className="h-10 w-10 rounded-full border-0 bg-gray-500 p-2 text-white hover:bg-gray-700"
-              onClick={async () => {
-                await music.stop();
-                await calculateElo(
-                  playlistId!,
-                  matchUp!.baseline,
-                  matchUp!.candidate,
-                  "baseline"
-                );
-                getMatchUp();
-              }}
-            >
-              <HeartIcon />
-            </button>
-            <PlayButton song={matchUp.baseline} />
-          </div>
-        </div>
-        <div className="flex flex-col justify-center">
-          <button
-            className="h-10 w-10 rounded-full border-0 bg-gray-500 p-2 font-bold text-white hover:bg-gray-700"
-            onClick={async () => {
-              await music.stop();
-              await calculateElo(
-                playlistId!,
-                matchUp!.baseline,
-                matchUp!.candidate,
-                "tie"
-              );
-              getMatchUp();
-            }}
-          >
-            Tie
-          </button>
-        </div>
-        <div className="flex w-full flex-col items-center">
-          <div className="flex flex-row items-center">
-            <PlayButton song={matchUp.candidate} />
-            <button
-              className="h-10 w-10 rounded-full border-0 bg-gray-500 p-2 text-white hover:bg-gray-700"
-              onClick={async () => {
-                await music.stop();
-                await calculateElo(
-                  playlistId!,
-                  matchUp!.baseline,
-                  matchUp!.candidate,
-                  "candidate"
-                );
-                getMatchUp();
-              }}
-            >
-              <HeartIcon />
-            </button>
-          </div>
-        </div>
-      </div>
-      <div className="mx-auto flex max-w-2xl flex-row justify-between">
-        <div>Current ranking:</div>
-
-        <div>{inputSongs.length} songs</div>
-      </div>
-      <PlaylistElo
-        playlistId={playlistId}
-        songs={inputSongs}
-        ratings={eloRecords}
-      />
+      <PlaylistElo songs={songs} ratings={eloRecords} />
     </div>
   );
 }

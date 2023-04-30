@@ -5,13 +5,17 @@ import {Song} from "../MusicWrapper";
 /**
  * A song to be displayed as part of a playlist.
  */
-export function PlaylistSong(props: { song: Song; rating: number }) {
+export function PlaylistSong(props: {
+  song: Song;
+  rating: number;
+  ratingCount: number;
+}) {
   return (
-    <div className="mx-auto my-2 flex max-w-2xl flex-row items-center">
-      <div className="w-1/6">
+    <div className="mx-auto my-2 grid max-w-2xl grid-cols-12 items-center">
+      <div className="col-span-2">
         <Artwork artwork={props.song.artwork || null} />
       </div>
-      <div className="w-4/6 px-4">
+      <div className="col-span-8 px-4">
         <div className="flex flex-col text-left">
           <div className="line-clamp-1 text-ellipsis break-all text-sm font-bold">
             {props.song.title}
@@ -21,14 +25,11 @@ export function PlaylistSong(props: { song: Song; rating: number }) {
           </div>
         </div>
       </div>
-      <div className="w-1/6">
-        <div className="flex flex-col">
-          <div className="flex flex-row items-center">
-            <div className="w-full">
-              <div className="text-sm">Elo: {props.rating.toFixed(1)}</div>
-            </div>
-          </div>
-        </div>
+      <div className="col-span-1">
+        <div className="text-sm">{props.rating.toFixed(1)}</div>
+      </div>
+      <div className="col-span-1">
+        <div className="text-sm">{props.ratingCount} votes</div>
       </div>
     </div>
   );
