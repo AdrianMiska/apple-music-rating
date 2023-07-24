@@ -28,7 +28,7 @@
     "eslint-config-prettier": "^8.8.0",
     "firebase": "^9.21.0",
     "firebaseui": "^6.0.2",
-    "next": "^13.3.1",
+    "next": "^13.4.12",
     "pkce-challenge": "^3.1.0",
     "postcss": "^8.4.23",
     "prettier": "^2.8.8",
