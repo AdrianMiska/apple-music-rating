@@ -15,7 +15,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.4.0",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@heroicons/react": "^2.0.17",
-    "@sentry/react": "^7.50.0",
+    "@sentry/react": "^7.61.1",
     "@sentry/tracing": "^7.50.0",
     "@types/jest": "^29.5.3",
     "@types/musickit-js": "^1.0.5",
