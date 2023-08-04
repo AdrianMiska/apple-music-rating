@@ -1,8 +1,8 @@
 import { useMusic } from "./MusicWrapper";
-import { useEffect, useState } from "react";
+import { PropsWithChildren, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 
-export function RequireAuthorization({ children }: { children: JSX.Element }) {
+export function RequireAuthorization(props: PropsWithChildren) {
   let [isAuthorized, setIsAuthorized] = useState(false);
   let [isLoading, setIsLoading] = useState(true);
 
@@ -16,7 +16,7 @@ export function RequireAuthorization({ children }: { children: JSX.Element }) {
     authorized().then(() => {
       setIsLoading(false);
     });
-  }, []);
+  }, [musicWrapper]);
 
   let router = useRouter();
 
@@ -32,6 +32,6 @@ export function RequireAuthorization({ children }: { children: JSX.Element }) {
   if (isLoading || !isAuthorized) {
     return <div>Loading...</div>;
   } else {
-    return <>{children}</>;
+    return <>{props.children}</>;
   }
 }

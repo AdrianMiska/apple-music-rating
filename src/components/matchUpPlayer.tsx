@@ -29,31 +29,34 @@ export function MatchUpPlayer(props: {
           {candidate.artist}
         </h2>
       </div>
-      <div className="mx-auto my-2 flex max-w-xl flex-row">
+      <div className="mx-auto my-2 flex max-w-lg flex-row">
         <div className="flex w-full flex-col items-center">
-          <div className="flex flex-row items-center">
+          <div className="flex w-full flex-row items-center justify-between">
             <button
-              className="h-10 w-10 rounded-full border-0 bg-gray-500 p-2 text-white hover:bg-gray-700"
+              className="m-2 h-10 w-10 rounded-full border-0 bg-gray-500 p-2 text-white hover:bg-gray-700"
               onClick={() => props.processResult("baseline")}
             >
               <HeartIcon />
             </button>
             <PlayButton song={baseline} />
+            <div />
           </div>
         </div>
         <div className="flex flex-col justify-center">
           <button
-            className="h-10 w-10 rounded-full border-0 bg-gray-500 p-2 font-bold text-white hover:bg-gray-700"
+            className="m-2 h-10 w-10 rounded-full border-0 bg-gray-500 p-2 font-bold text-white hover:bg-gray-700"
             onClick={() => props.processResult("tie")}
           >
             Tie
           </button>
         </div>
         <div className="flex w-full flex-col items-center">
-          <div className="flex flex-row items-center">
+          <div className="flex w-full flex-row items-center justify-between">
+            <div />
+
             <PlayButton song={candidate} />
             <button
-              className="h-10 w-10 rounded-full border-0 bg-gray-500 p-2 text-white hover:bg-gray-700"
+              className="m-2 h-10 w-10 rounded-full border-0 bg-gray-500 p-2 text-white hover:bg-gray-700"
               onClick={() => props.processResult("candidate")}
             >
               <HeartIcon />

@@ -22,23 +22,25 @@ export function PlaylistElo(props: {
 
   return (
     <div>
-      <div className="mx-auto flex max-w-2xl flex-row justify-between">
-        <div>Current ranking:</div>
-
-        <div>{sortedSongs.length} songs</div>
+      <div className=" mx-auto grid max-w-xl grid-cols-12 items-center space-y-2 py-4">
+        <div className="col-span-8 text-left sm:col-span-10">
+          {sortedSongs.length} songs
+        </div>
+        <div className="col-span-2 text-right sm:col-span-1">Rating</div>
+        <div className="col-span-2 text-right sm:col-span-1">Votes</div>
+        {sortedSongs.map((song: Song) => {
+          let rating = props.ratings.get(song.id)?.rating || 0;
+          let ratingCount = props.ratings.get(song.id)?.ratingCount || 0;
+          return (
+            <PlaylistSong
+              key={song.id}
+              song={song}
+              rating={rating}
+              ratingCount={ratingCount}
+            />
+          );
+        })}
       </div>
-      {sortedSongs.map((song: Song) => {
-        let rating = props.ratings.get(song.id)?.rating || 0;
-        let ratingCount = props.ratings.get(song.id)?.ratingCount || 0;
-        return (
-          <PlaylistSong
-            key={song.id}
-            song={song}
-            rating={rating}
-            ratingCount={ratingCount}
-          />
-        );
-      })}
     </div>
   );
 }

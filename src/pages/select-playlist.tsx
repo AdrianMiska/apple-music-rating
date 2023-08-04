@@ -35,21 +35,17 @@ export function PlaylistTile(props: {
   }
 
   return (
-    <RequireAuthentication>
-      <RequireAuthorization>
-        <div className="my-2 w-1/2 md:w-1/3 lg:w-1/4">
-          <Link
-            href={props.target}
-            className="mx-2 flex h-full cursor-pointer justify-evenly break-words rounded-lg bg-white px-4
+    <div className="my-2">
+      <Link
+        href={props.target}
+        className="mx-2 flex h-full cursor-pointer justify-evenly break-words rounded-lg bg-white px-4
             py-5 shadow-lg hover:bg-gray-100 hover:shadow-md"
-          >
-            {getIcon()}
+      >
+        {getIcon()}
 
-            <p className="my-auto text-xl font-bold">{props.name}</p>
-          </Link>
-        </div>
-      </RequireAuthorization>
-    </RequireAuthentication>
+        <p className="my-auto text-xl font-bold">{props.name}</p>
+      </Link>
+    </div>
   );
 }
 
@@ -70,58 +66,60 @@ export default function SelectPlaylist() {
         setSpotifyUser(true);
       }
     });
-  }, []);
+  }, [music]);
 
   useEffect(() => {
     music.searchPlaylist(searchTerm).then((results) => {
       setSearchResults(results);
     });
-  }, [searchTerm]);
+  }, [music, searchTerm]);
 
   return (
-    <div>
-      <p>Use all the songs you marked as favorite:</p>
-      <div className="my-3">
-        <div className="flex flex-row justify-center">
-          {appleMusicUser && (
-            <PlaylistTile
-              musicProvider={MusicProvider.AppleMusic}
-              name="Favorites"
-              target="/song-rating/apple-music-favorites"
-            />
-          )}
-          {spotifyUser && (
-            <PlaylistTile
-              musicProvider={MusicProvider.Spotify}
-              name="Favorites"
-              target="/song-rating/spotify-saved-tracks"
-            />
-          )}
+    <RequireAuthentication>
+      <RequireAuthorization>
+        <p>Use all the songs you marked as favorite:</p>
+        <div className="my-3">
+          <div className="flex flex-row justify-center">
+            {appleMusicUser && (
+              <PlaylistTile
+                musicProvider={MusicProvider.AppleMusic}
+                name="Favorites"
+                target="/song-rating/apple-music-favorites"
+              />
+            )}
+            {spotifyUser && (
+              <PlaylistTile
+                musicProvider={MusicProvider.Spotify}
+                name="Favorites"
+                target="/song-rating/spotify-saved-tracks"
+              />
+            )}
+          </div>
         </div>
-      </div>
-      <p>Or search for a playlist:</p>
-      <input
-        type="text"
-        placeholder="Search"
-        className="my-3 w-11/12 max-w-sm appearance-none  rounded-full
+        <p>Or search for a playlist:</p>
+        <input
+          type="text"
+          placeholder="Search"
+          className="my-3 w-11/12 max-w-sm appearance-none  rounded-full
                border-2 border-gray-200 bg-gray-200 px-4 py-2 leading-tight text-gray-700 focus:border-blue-700 focus:bg-white focus:outline-none"
-        value={searchTerm}
-        onChange={(e) => {
-          setSearchTerm(e.target.value);
-        }}
-      />
-      <div className="flex flex-wrap justify-center">
-        {searchResults?.map((playlist) => {
-          return (
-            <PlaylistTile
-              key={playlist.id}
-              musicProvider={playlist.musicProvider}
-              name={playlist.name}
-              target={`/song-rating/${playlist.id}`}
-            />
-          );
-        })}
-      </div>
-    </div>
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+          }}
+        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {searchResults?.map((playlist) => {
+            return (
+              <PlaylistTile
+                key={playlist.id}
+                musicProvider={playlist.musicProvider}
+                name={playlist.name}
+                target={`/song-rating/${playlist.id}`}
+              />
+            );
+          })}
+        </div>
+      </RequireAuthorization>
+    </RequireAuthentication>
   );
 }

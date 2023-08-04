@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { PropsWithChildren, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import firebase from "firebase/compat/app";
 import "firebase/compat/auth";
 
-export function RequireAuthentication({ children }: { children: JSX.Element }) {
+export function RequireAuthentication(props: PropsWithChildren) {
   let [isAuthenticated, setIsAuthenticated] = useState(false);
   let [isLoading, setIsLoading] = useState(true);
 
@@ -35,6 +35,6 @@ export function RequireAuthentication({ children }: { children: JSX.Element }) {
   if (isLoading || !isAuthenticated) {
     return <div>Loading...</div>;
   } else {
-    return <>{children}</>;
+    return <>{props.children}</>;
   }
 }

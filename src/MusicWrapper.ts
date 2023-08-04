@@ -628,11 +628,8 @@ class Music {
       tracks = nextTracks;
     }
     let favorites = tracks.items.map((track) => new Song(track.track));
-    await localStorage.setItem("spotify_favorites", JSON.stringify(favorites));
-    await localStorage.setItem(
-      "spotify_favorites_date",
-      new Date().toISOString()
-    );
+    localStorage.setItem("spotify_favorites", JSON.stringify(favorites));
+    localStorage.setItem("spotify_favorites_date", new Date().toISOString());
     return favorites;
   }
 
@@ -685,11 +682,8 @@ class Music {
     let favorites = (await this.filterAppleMusicFavorites(allSongs)).map(
       (song) => new Song(song)
     );
-    await localStorage.setItem(
-      "apple_music_favorites",
-      JSON.stringify(favorites)
-    );
-    await localStorage.setItem(
+    localStorage.setItem("apple_music_favorites", JSON.stringify(favorites));
+    localStorage.setItem(
       "apple_music_favorites_date",
       new Date().toISOString()
     );

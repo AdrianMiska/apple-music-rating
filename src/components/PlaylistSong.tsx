@@ -11,11 +11,11 @@ export function PlaylistSong(props: {
   ratingCount: number;
 }) {
   return (
-    <div className="mx-auto my-2 grid max-w-2xl grid-cols-12 items-center">
+    <>
       <div className="col-span-2">
         <Artwork artwork={props.song.artwork || null} />
       </div>
-      <div className="col-span-8 px-4">
+      <div className="col-span-6 px-4 sm:col-span-8">
         <div className="flex flex-col text-left">
           <div className="line-clamp-1 text-ellipsis break-all text-sm font-bold">
             {props.song.title}
@@ -25,12 +25,14 @@ export function PlaylistSong(props: {
           </div>
         </div>
       </div>
-      <div className="col-span-1">
-        <div className="text-sm">{props.rating.toFixed(1)}</div>
+      <div className="col-span-2 sm:col-span-1">
+        <div className="text-right text-sm ">{props.rating.toFixed(1)}</div>
       </div>
-      <div className="col-span-1">
-        <div className="text-sm">{props.ratingCount} votes</div>
+      <div className="col-span-2 sm:col-span-1">
+        <div className="text-right text-sm">{props.ratingCount}</div>
       </div>
-    </div>
+      <div className="col-span-2" />
+      <hr className="col-span-10 ml-4" />
+    </>
   );
 }

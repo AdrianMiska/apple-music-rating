@@ -30,10 +30,10 @@ export function PlayButton(props: { song: Song }) {
 
   return (
     <button
-      className="h-20 w-20 rounded-full border-0 bg-transparent text-gray-500 hover:text-gray-700"
+      className="m-2 h-16 w-16 rounded-full border-0 bg-gray-500 p-2 text-white hover:bg-gray-700 sm:h-20 sm:w-20"
       onClick={isPlaying ? stop : playPreview}
     >
-      {isPlaying ? <StopIcon /> : <PlayIcon />}
+      {isPlaying ? <StopIcon /> : <PlayIcon className="ml-1" />}
     </button>
   );
 }
