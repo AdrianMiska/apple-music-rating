@@ -896,15 +896,12 @@
   resolved "https://registry.yarnpkg.com/@types/musickit-js/-/musickit-js-1.0.5.tgz#3a3ce533dd0ce7537fbf604823dc3a2389f3696d"
   integrity sha512-S78psg+wt+vhMACaQrA6qXAQl8pWQwY/hpK8LJQR4l62Kkm3UhTcMeV9juILZLnzOEB4CyPyUiwx+X4Q1iAvQQ==
 
-"@types/node@*", "@types/node@>=12.12.47", "@types/node@>=13.7.0":
-  version "18.16.3"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.16.3.tgz#6bda7819aae6ea0b386ebc5b24bdf602f1b42b01"
-  integrity sha512-OPs5WnnT1xkCBiuQrZA4+YAV4HEJejmHneyraIaxsbev5yCEr6KMwINNFP9wQeFIw8FWcoTqF3vQsa5CDaI+8Q==
-
-"@types/node@^20.4.7":
-  version "20.4.7"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.4.7.tgz#74d323a93f1391a63477b27b9aec56669c98b2ab"
-  integrity sha512-bUBrPjEry2QUTsnuEjzjbS7voGWCc30W0qzgMf90GPeDGFRakvrz47ju+oqDAKCXLUCe39u57/ORMl/O/04/9g==
+"@types/node@*", "@types/node@>=12.12.47", "@types/node@>=13.7.0", "@types/node@^20.8.8":
+  version "20.8.8"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.8.8.tgz#adee050b422061ad5255fc38ff71b2bb96ea2a0e"
+  integrity sha512-YRsdVxq6OaLfmR9Hy816IMp33xOBjfyOgUd77ehqg96CFywxAPbDbXvAsuN2KVg2HOT8Eh6uAfU+l4WffwPVrQ==
+  dependencies:
+    undici-types "~5.25.1"
 
 "@types/prop-types@*":
   version "15.7.5"
@@ -3450,6 +3447,11 @@ unbox-primitive@^1.0.2:
     has-bigints "^1.0.2"
     has-symbols "^1.0.3"
     which-boxed-primitive "^1.0.2"
+
+undici-types@~5.25.1:
+  version "5.25.3"
+  resolved "https://registry.yarnpkg.com/undici-types/-/undici-types-5.25.3.tgz#e044115914c85f0bcbb229f346ab739f064998c3"
+  integrity sha512-Ga1jfYwRn7+cP9v8auvEXN1rX3sWqlayd4HP7OKk4mZWylEmu3KzXDUGrQUN6Ol7qo1gPvB2e5gX6udnyEPgdA==
 
 update-browserslist-db@^1.0.10:
   version "1.0.11"
