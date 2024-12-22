@@ -387,6 +387,14 @@ class Music {
             "Music-User-Token": musicKit.musicUserToken,
           },
         });
+
+        if (response.status === 429) {
+          const retryAfter = response.headers.get("Retry-After");
+          const waitTime = retryAfter ? parseInt(retryAfter) * 1000 : 1000;
+          await new Promise((resolve) => setTimeout(resolve, waitTime));
+          return await getTracks(next);
+        }
+
         const data = await response.json();
         songs.push(...data.data);
         if (data.next) {
@@ -584,21 +592,17 @@ class Music {
     for (let i = 0; i < songs.length; i += 100) {
       chunks.push(songs.slice(i, i + 100));
     }
-    //get the ratings for each chunk
-    let favoriteIds: string[] = (
-      await Promise.all(
-        chunks.map(async (chunk) => {
-          let result = await musicKit.api.music("v1/me/ratings/library-songs", {
-            ids: chunk.map((song: MusicKit.Songs) => song.id),
-          });
-          return result.data.data
-            .filter((rating: any) => rating.attributes.value === 1)
-            .map((rating: { id: string }) => {
-              return rating.id;
-            });
-        })
-      )
-    ).flat();
+    //get the ratings for each chunk sequentially
+    let favoriteIds: string[] = [];
+    for (const chunk of chunks) {
+      let result = await musicKit.api.music("v1/me/ratings/library-songs", {
+        ids: chunk.map((song: MusicKit.Songs) => song.id),
+      });
+      const chunkFavoriteIds = result.data.data
+        .filter((rating: any) => rating.attributes.value === 1)
+        .map((rating: { id: string }) => rating.id);
+      favoriteIds.push(...chunkFavoriteIds);
+    }
 
     return songs.filter((song: MusicKit.Songs) => {
       return favoriteIds.includes(song.id);
@@ -648,8 +652,7 @@ class Music {
     let limit = 100;
     let allSongs: any[] = [];
 
-    //first call gives us a total we can use to chunk the songs and get them in parallel
-
+    //first call gives us a total we can use to chunk the songs
     let {
       data: {
         data: songs,
@@ -662,21 +665,14 @@ class Music {
 
     allSongs.push(...songs);
 
-    //get remaining songs in chunks in parallel
-    //create a promise for each chunk
-    let promises = [];
+    // get remaining songs sequentially
     for (let i = 1; i < Math.ceil(total / limit); i++) {
-      promises.push(
-        musicKit.api.music("v1/me/library/songs", {
-          limit: limit,
-          offset: offset + i * limit,
-        })
-      );
-    }
-    let results = await Promise.all(promises);
-    results.forEach((result: any) => {
+      const result = await musicKit.api.music("v1/me/library/songs", {
+        limit: limit,
+        offset: offset + i * limit,
+      });
       allSongs.push(...result.data.data);
-    });
+    }
 
     //filter out songs that aren't favorites
     let favorites = (await this.filterAppleMusicFavorites(allSongs)).map(
