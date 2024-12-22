@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo } from "react";
-import { calculateElo, EloRecord, getEloRatings } from "../../EloUtils";
+import { calculateElo, EloRecord, getEloRatings, RatingPair, selectHighInformationMatchup } from "../../EloUtils";
 import { PlaylistElo } from "../../components/PlaylistElo";
 import { SongRatingHeader } from "../../components/SongRatingHeader";
 import { Playlist, Song, useMusic } from "../../MusicWrapper";
@@ -7,11 +7,6 @@ import { RequireAuthentication } from "../../RequireAuthentication";
 import { RequireAuthorization } from "../../RequireAuthorization";
 import { useRouter } from "next/router";
 import { MatchUpPlayer } from "../../components/matchUpPlayer";
-
-export type RatingPair = {
-  baseline: Song;
-  candidate: Song;
-};
 
 export default function SongRatingWrapper() {
   return (
@@ -66,58 +61,22 @@ function SongRating() {
     });
   }, [music, playlistId]);
 
-  let inputSongsSortedByCount = useMemo(() => {
-    if (!eloRecords) {
-      return [];
-    }
-    let inputSongsByCount = [...songs];
-    inputSongsByCount.sort((a, b) => {
-      return (
-        (eloRecords?.get(a.id)?.ratingCount || 0) -
-        (eloRecords?.get(b.id)?.ratingCount || 0)
-      );
-    });
-    return inputSongsByCount;
-  }, [songs, eloRecords]);
-
   const getMatchUp = useCallback(() => {
-    if (songs.length === 0) {
+    if (!songs.length || !eloRecords) {
       return null;
     }
-
-    let baseline = songs[Math.floor(Math.random() * songs.length)];
-    let candidate: Song;
-
-    if (Math.random() < 0.3) {
-      // in 30% of the cases, we pick a random song from the playlist
-      candidate = songs[Math.floor(Math.random() * songs.length)];
-    } else {
-      // otherwise we determine a random song with a ratingCount below the median
-      let median = Math.floor(songs.length / 2);
-      candidate = inputSongsSortedByCount[Math.floor(Math.random() * median)];
+    const pair = selectHighInformationMatchup(songs, eloRecords);
+    if (pair) {
+      setMatchUp(pair);
     }
-
-    if (baseline.id === candidate.id) {
-      let candidateIndex = songs.indexOf(candidate);
-      if (candidateIndex + 1 < songs.length) {
-        candidate = songs[candidateIndex + 1];
-      } else if (candidateIndex - 1 >= 0) {
-        candidate = songs[candidateIndex - 1];
-      }
-    }
-    if (Math.random() < 0.5) {
-      setMatchUp({ baseline, candidate });
-    } else {
-      setMatchUp({ baseline: candidate, candidate: baseline });
-    }
-  }, [songs, inputSongsSortedByCount]);
+  }, [songs, eloRecords]);
 
   useEffect(() => {
-    if (inputSongsSortedByCount.length > 0 && !matchUp) {
+    if (songs.length > 0 && !matchUp) {
       // initial match up
       getMatchUp();
     }
-  }, [matchUp, getMatchUp, inputSongsSortedByCount]);
+  }, [matchUp, getMatchUp, songs]);
 
   async function saveSortedPlaylist(inputSongs: Song[], playlist?: Playlist) {
     let sorted = inputSongs.sort((a, b) => {

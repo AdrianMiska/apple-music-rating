@@ -2,7 +2,7 @@ import { Artwork } from "./Artwork";
 import { HeartIcon } from "@heroicons/react/24/solid";
 import { PlayButton } from "./PlayButton";
 import React from "react";
-import { RatingPair } from "../pages/song-rating/[id]";
+import { RatingPair } from "../EloUtils";
 
 export function MatchUpPlayer(props: {
   processResult: (winner: "baseline" | "candidate" | "tie") => Promise<void>;
