@@ -42,12 +42,14 @@ function getFirebaseUid(): string | undefined {
 }
 
 function computeWinProbability(ratingA: number, ratingB: number): number {
-  return 1 / (1 + Math.pow(10, (ratingB - ratingA) / 480));
+  const rawP = 1 / (1 + Math.pow(10, (ratingB - ratingA) / 480));
+  // clamp the probability to be between 0 and 1
+  return Math.max(0, Math.min(1, rawP));
 }
 
 export function selectHighInformationMatchup(
   songs: Song[],
-  eloRecords: Map<string, EloRecord>
+  eloRecords: Map<string, EloRecord>,
 ): RatingPair | null {
   // If there are less than 2 songs, we cannot create a matchup
   if (songs.length < 2) return null;
@@ -97,7 +99,7 @@ export async function setEloRating(
   playlistId: string,
   song: Song,
   rating: number,
-  ratingCount: number
+  ratingCount: number,
 ) {
   let firebaseUid = getFirebaseUid();
   if (!!firebaseUid) {
@@ -110,21 +112,21 @@ export async function setEloRating(
       "playlists",
       playlistId,
       "songs",
-      song.id
+      song.id,
     );
     return await setDoc(docRef, { rating: rating, ratingCount: ratingCount });
   } else {
     localStorage.setItem(playlistId + "/" + song.id, rating.toString());
     localStorage.setItem(
       playlistId + "/" + song.id + "/ratingCount",
-      ratingCount.toString()
+      ratingCount.toString(),
     );
   }
 }
 
 export async function getEloRating(
   playlistId: string,
-  song: Song
+  song: Song,
 ): Promise<EloRecord> {
   let firebaseUid = getFirebaseUid();
   if (!!firebaseUid) {
@@ -136,20 +138,20 @@ export async function getEloRating(
       "playlists",
       playlistId,
       "songs",
-      song.id
+      song.id,
     );
     let document = await getDoc(docRef);
     return new EloRecord(
       song.id,
       document?.data()?.rating | 0,
-      document?.data()?.ratingCount | 0
+      document?.data()?.ratingCount | 0,
     );
   } else {
     let rating = parseInt(
-      localStorage.getItem(playlistId + "/" + song.id) || "0"
+      localStorage.getItem(playlistId + "/" + song.id) || "0",
     );
     let ratingCount = parseInt(
-      localStorage.getItem(playlistId + "/" + song.id + "/ratingCount") || "0"
+      localStorage.getItem(playlistId + "/" + song.id + "/ratingCount") || "0",
     );
     return new EloRecord(song.id, rating, ratingCount);
   }
@@ -157,7 +159,7 @@ export async function getEloRating(
 
 export function getEloRatings(
   playlistId: string,
-  callback: (ratings: { [songId: string]: EloRecord }) => void
+  callback: (ratings: { [songId: string]: EloRecord }) => void,
 ): Unsubscribe | undefined {
   let firebaseUid = getFirebaseUid();
   if (!!firebaseUid) {
@@ -168,7 +170,7 @@ export function getEloRatings(
       firebaseUid,
       "playlists",
       playlistId,
-      "songs"
+      "songs",
     );
     return onSnapshot(docRef, (snapshot) => {
       let ratings = {} as { [songId: string]: EloRecord };
@@ -176,21 +178,21 @@ export function getEloRatings(
         return (ratings[doc.id] = new EloRecord(
           doc.id,
           doc.data().rating,
-          doc.data().ratingCount
+          doc.data().ratingCount,
         ));
       });
       callback(ratings);
     });
   } else {
     let keys = Object.keys(localStorage).filter((key: string) =>
-      key.startsWith(playlistId + "/")
+      key.startsWith(playlistId + "/"),
     );
     let songs = {} as { [key: string]: EloRecord };
     for (let key of keys) {
       let songId = key.split("/")[2];
       let rating = parseInt(localStorage.getItem(key) || "0");
       let ratingCount = parseInt(
-        localStorage.getItem(key + "/ratingCount") || "0"
+        localStorage.getItem(key + "/ratingCount") || "0",
       );
       songs[songId] = new EloRecord(songId, rating, ratingCount);
     }
@@ -204,59 +206,118 @@ export async function calculateElo(
   playlistId: string,
   baseline: Song,
   candidate: Song,
-  winner: "baseline" | "candidate" | "tie"
+  winner: "baseline" | "candidate" | "tie",
 ) {
   const baselineRecord = await getEloRating(playlistId, baseline);
   const candidateRecord = await getEloRating(playlistId, candidate);
 
-  const pBaseline = computeWinProbability(baselineRecord.rating, candidateRecord.rating);
-  const pCandidate = computeWinProbability(candidateRecord.rating, baselineRecord.rating);
-  const outcomeBaseline = winner === "baseline" ? 1 : winner === "tie" ? 0.5 : 0;
-  const outcomeCandidate = winner === "candidate" ? 1 : winner === "tie" ? 0.5 : 0;
+  const pBaseline = computeWinProbability(
+    baselineRecord.rating,
+    candidateRecord.rating,
+  );
+  const pCandidate = computeWinProbability(
+    candidateRecord.rating,
+    baselineRecord.rating,
+  );
+  const outcomeBaseline =
+    winner === "baseline" ? 1 : winner === "tie" ? 0.5 : 0;
+  const outcomeCandidate =
+    winner === "candidate" ? 1 : winner === "tie" ? 0.5 : 0;
 
   const kFactor = winner === "tie" ? 16 : 32;
 
-  let newBaselineRating = baselineRecord.rating + (outcomeBaseline - pBaseline) * kFactor;
-  let newCandidateRating = candidateRecord.rating + (outcomeCandidate - pCandidate) * kFactor;
+  let newBaselineRating =
+    baselineRecord.rating + (outcomeBaseline - pBaseline) * kFactor;
+  let newCandidateRating =
+    candidateRecord.rating + (outcomeCandidate - pCandidate) * kFactor;
 
   await setEloRating(
     playlistId,
     baseline,
     newBaselineRating,
-    baselineRecord.ratingCount + 1
+    baselineRecord.ratingCount + 1,
   );
   await setEloRating(
     playlistId,
     candidate,
     newCandidateRating,
-    candidateRecord.ratingCount + 1
+    candidateRecord.ratingCount + 1,
   );
 }
 
+/**
+ * Calculates a measure (in the range [0..1]) of how "converged" (predictable)
+ * a set of Elo ratings is, based on the pairwise Bernoulli entropy of their
+ * respective win probabilities.
+ *
+ * - For each unique pair of records (A, B), we compute the probability p that A beats B.
+ * - We then treat that as a Bernoulli random variable with parameter p, whose
+ *   entropy H = -p*log2(p) - (1-p)*log2(1-p).
+ * - We sum up this entropy for all pairs (totalEntropy).
+ * - The maximum entropy (maxEntropy) per pair is 1 bit (when p = 0.5).
+ * - We return 1 - (totalEntropy / maxEntropy).
+ *   - If totalEntropy = 0, we return 1 (fully predictable).
+ *   - If totalEntropy = maxEntropy, we return 0 (fully uncertain).
+ *
+ * @param songs - An array of Song objects.
+ * @param {Map<string, EloRecord>} eloRecords - Map from song IDs to EloRecord objects, each containing a rating.
+ * @returns {number} A convergence metric in [0..1]: higher means more predictable, lower means more uncertain.
+ */
 export function convergenceProbability(
-  eloRecords: Map<string, EloRecord>
+  songs: Song[],
+  eloRecords: Map<string, EloRecord>,
 ): number {
-  let recordsArray = Array.from(eloRecords.values());
-  if (recordsArray.length < 2) return 1.0;
+  // If there's fewer than 2 songs, there's no pairwise uncertainty, so return 1.0
+  if (songs.length < 2) return 1.0;
 
-  let E_total = 0;
+  // Accumulate the total pairwise entropy here.
+  let totalEntropy = 0;
+
+  // We'll also track how many pairs we've processed.
   let pairCount = 0;
 
-  for (let i = 0; i < recordsArray.length; i++) {
-    for (let j = i + 1; j < recordsArray.length; j++) {
-      let A = recordsArray[i];
-      let B = recordsArray[j];
-      let p = computeWinProbability(A.rating, B.rating);
-      let H =
-        p <= 0 || p >= 1
-          ? 0
-          : -p * Math.log2(p) - (1 - p) * Math.log2(1 - p);
-      E_total += H;
+  // Go through all unique pairs (i < j).
+  for (let i = 0; i < songs.length; i++) {
+    for (let j = i + 1; j < songs.length; j++) {
+      let a = songs[i];
+      let b = songs[j];
+
+      // Compute the probability that A beats B (0 <= p <= 1).
+      let winProbability = computeWinProbability(
+        eloRecords.get(a.id)?.rating || 0,
+        eloRecords.get(b.id)?.rating || 0,
+      );
+
+      // Clamp p into [0, 1] just to protect against floating-point imprecision.
+      if (winProbability < 0) winProbability = 0;
+      if (winProbability > 1) winProbability = 1;
+
+      // Compute the Shannon entropy for this pair, in bits.
+      let entropyPerPair: number;
+      if (winProbability <= 0 || winProbability >= 1) {
+        // It's 0 if p=0 or p=1 (perfectly predictable).
+        entropyPerPair = 0;
+      } else {
+        entropyPerPair =
+          -winProbability * Math.log2(winProbability) -
+          (1 - winProbability) * Math.log2(1 - winProbability);
+      }
+
+      // Add this pair's entropy to the total.
+      totalEntropy += entropyPerPair;
       pairCount++;
     }
   }
 
+  // If we somehow have 0 pairs, just return 1.0.
   if (pairCount === 0) return 1.0;
-  let E_max = pairCount;
-  return 1 - E_total / E_max;
+
+  // Maximum possible entropy for each pair is 1 bit (when p=0.5),
+  // so for pairCount pairs, the max entropy is simply pairCount.
+  const maxEntropy = pairCount;
+
+  // Return 1 minus the ratio of totalEntropy to maxEntropy.
+  //  - If totalEntropy=0 => fully predictable => 1
+  //  - If totalEntropy=maxEntropy => fully uncertain => 0
+  return 1 - totalEntropy / maxEntropy;
 }

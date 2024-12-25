@@ -1,5 +1,11 @@
-import React, { useCallback, useEffect, useMemo } from "react";
-import { calculateElo, EloRecord, getEloRatings, RatingPair, selectHighInformationMatchup } from "../../EloUtils";
+import React, { useCallback, useEffect } from "react";
+import {
+  calculateElo,
+  EloRecord,
+  getEloRatings,
+  RatingPair,
+  selectHighInformationMatchup,
+} from "../../EloUtils";
 import { PlaylistElo } from "../../components/PlaylistElo";
 import { SongRatingHeader } from "../../components/SongRatingHeader";
 import { Playlist, Song, useMusic } from "../../MusicWrapper";
@@ -37,7 +43,7 @@ function SongRating() {
       playlistId,
       (ratings: { [key: string]: EloRecord }) => {
         setEloRecords(new Map(Object.entries(ratings)));
-      }
+      },
     );
 
     return () => unsub?.();
@@ -96,7 +102,7 @@ function SongRating() {
       playlistId!,
       matchUp!.baseline,
       matchUp!.candidate,
-      winner
+      winner,
     );
     getMatchUp();
   }
