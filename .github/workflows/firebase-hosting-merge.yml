@@ -6,6 +6,9 @@ on:
   push:
     branches:
       - master
+  schedule:
+    # Run once a month at midnight on the 1st
+    - cron: '0 0 1 * *'
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
@@ -19,6 +22,16 @@ jobs:
           node-version: 18
           cache: 'yarn'
       - run: yarn install --frozen-lockfile
+      
+      # Generate Apple Music JWT token
+      - name: Generate Apple Music JWT
+        id: generate-jwt
+        run: yarn generate-music-token
+        env:
+          APPLE_PRIVATE_KEY: ${{ secrets.APPLE_PRIVATE_KEY }}
+          APPLE_KEY_ID: ${{ secrets.APPLE_KEY_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
@@ -27,7 +40,7 @@ jobs:
           projectId: elo-music-rating
         env:
           FIREBASE_CLI_EXPERIMENTS: webframeworks
-          NEXT_PUBLIC_MUSIC_KIT_DEVELOPER_TOKEN: '${{ secrets.NEXT_PUBLIC_MUSIC_KIT_DEVELOPER_TOKEN }}'
+          NEXT_PUBLIC_MUSIC_KIT_DEVELOPER_TOKEN: ${{ env.NEXT_PUBLIC_MUSIC_KIT_DEVELOPER_TOKEN }}
           NEXT_PUBLIC_FIREBASE_API_KEY: '${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}'
           NEXT_PUBLIC_SPOTIFY_CLIENT_ID: '${{ secrets.NEXT_PUBLIC_SPOTIFY_CLIENT_ID }}'
           NEXT_PUBLIC_SENTRY_DSN: '${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}'
