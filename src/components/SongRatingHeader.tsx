@@ -16,7 +16,7 @@ export function SongRatingHeader(props: {
     >
       <Link
         href="/select-playlist"
-        className="flex items-center rounded bg-transparent p-4 pl-2 font-semibold text-gray-800 hover:bg-gray-200 hover:text-gray-900"
+        className="flex items-center rounded-sm bg-transparent p-4 pl-2 font-semibold text-gray-800 hover:bg-gray-200 hover:text-gray-900"
         onClick={async () => {
           await music.stop();
         }}
@@ -27,7 +27,7 @@ export function SongRatingHeader(props: {
         {props.inputPlaylist?.name}
       </div>
       <button
-        className="flex items-center rounded bg-transparent p-4 pr-2 font-semibold text-gray-800 hover:bg-gray-200 hover:text-gray-900"
+        className="flex items-center rounded-sm bg-transparent p-4 pr-2 font-semibold text-gray-800 hover:bg-gray-200 hover:text-gray-900"
         onClick={props.onSave}
       >
         <PlusIcon className="mr-2 h-6 w-6" /> Save

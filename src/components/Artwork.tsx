@@ -13,7 +13,7 @@ export function Artwork(props: { artwork: MusicWrapperArtwork | null }) {
   }
 
   return (
-    <div className="overflow-hidden rounded">
+    <div className="overflow-hidden rounded-sm">
       <div className="flex aspect-square">
         {props.artwork !== null ? (
           <img

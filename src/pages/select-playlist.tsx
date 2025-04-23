@@ -101,7 +101,7 @@ export default function SelectPlaylist() {
           type="text"
           placeholder="Search"
           className="my-3 w-11/12 max-w-sm appearance-none  rounded-full
-               border-2 border-gray-200 bg-gray-200 px-4 py-2 leading-tight text-gray-700 focus:border-blue-700 focus:bg-white focus:outline-none"
+               border-2 border-gray-200 bg-gray-200 px-4 py-2 leading-tight text-gray-700 focus:border-blue-700 focus:bg-white focus:outline-hidden"
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
