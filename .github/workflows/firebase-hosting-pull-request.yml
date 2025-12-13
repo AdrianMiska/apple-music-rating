@@ -8,22 +8,22 @@ jobs:
     if: '${{ github.event.pull_request.head.repo.full_name == github.repository }}'
     runs-on: ubuntu-latest
     environment:
-      name: Review
+      name: Review-${{ github.event.pull_request.number }}
     permissions:
       pull-requests: write
       checks: write
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: 22
-          cache: 'yarn'
-      - run: yarn install --frozen-lockfile
+          bun-version: 1.3.4
       
       # Generate Apple Music JWT token
       - name: Generate Apple Music JWT
         id: generate-jwt
-        run: yarn generate-music-token
+        run: bun generate-music-token
         env:
           APPLE_PRIVATE_KEY: ${{ secrets.APPLE_PRIVATE_KEY }}
           APPLE_KEY_ID: ${{ secrets.APPLE_KEY_ID }}
