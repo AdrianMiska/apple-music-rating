@@ -20,6 +20,9 @@ jobs:
         with:
           bun-version: 1.3.4
       
+      - name: Write yarn.lock
+        run: bun install --frozen-lockfile --yarn
+
       # Generate Apple Music JWT token
       - name: Generate Apple Music JWT
         id: generate-jwt
