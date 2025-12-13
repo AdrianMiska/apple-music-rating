@@ -22,8 +22,8 @@ updates:
           - "@tailwindcss/postcss"
           - "postcss"
           - "prettier-plugin-tailwindcss"
-      eslint:
+      next:
         patterns:
-          - "eslint"
+          - "next"
+          - "@types/next"
           - "eslint-config-next"
-          - "eslint-config-prettier"
