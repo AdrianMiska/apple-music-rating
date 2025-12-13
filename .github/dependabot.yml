@@ -5,7 +5,25 @@
 
 version: 2
 updates:
-  - package-ecosystem: yarn # See documentation for possible values
+  - package-ecosystem: bun # See documentation for possible values
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
+    groups:
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
+      tailwindcss:
+        patterns:
+          - "tailwindcss"
+          - "@tailwindcss/postcss"
+          - "postcss"
+          - "prettier-plugin-tailwindcss"
+      eslint:
+        patterns:
+          - "eslint"
+          - "eslint-config-next"
+          - "eslint-config-prettier"
