@@ -1,5 +1,6 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "apple-music-rating",
@@ -10,7 +11,7 @@
         "@fortawesome/free-solid-svg-icons": "^6.7.2",
         "@fortawesome/react-fontawesome": "0.2.6",
         "@heroicons/react": "^2.2.0",
-        "@sentry/react": "^9.14.0",
+        "@sentry/react": "^10.30.0",
         "@sentry/tracing": "^7.120.3",
         "@tailwindcss/postcss": "4.1.18",
         "dotenv": "^16.5.0",
@@ -278,21 +279,21 @@
 
     "@rushstack/eslint-patch": ["@rushstack/eslint-patch@1.11.0", "", {}, "sha512-zxnHvoMQVqewTJr/W4pKjF0bMGiKJv1WX7bSrkl46Hg0QjESbzBROWK0Wg4RphzSOS5Jiy7eFimmM3UgMrMZbQ=="],
 
-    "@sentry-internal/browser-utils": ["@sentry-internal/browser-utils@9.14.0", "", { "dependencies": { "@sentry/core": "9.14.0" } }, "sha512-pDk9XUu9zf7lcT9QX0nTObPNp/y0xQyy1Dj+5/8TSB3vAfe0LQcooKGl/D1h7EoIXVHUozZk5JC/dH+gz6BXRg=="],
+    "@sentry-internal/browser-utils": ["@sentry-internal/browser-utils@10.30.0", "", { "dependencies": { "@sentry/core": "10.30.0" } }, "sha512-dVsHTUbvgaLNetWAQC6yJFnmgD0xUbVgCkmzNB7S28wIP570GcZ4cxFGPOkXbPx6dEBUfoOREeXzLqjJLtJPfg=="],
 
-    "@sentry-internal/feedback": ["@sentry-internal/feedback@9.14.0", "", { "dependencies": { "@sentry/core": "9.14.0" } }, "sha512-D+PiEUWbDT0vqmaTiOs6OzXwVRVFgf7BCkFs48qsN9sAPwUgT+5zh2oo/rU2r0NrmMcvJVtSY+ezwPMk8BgGsg=="],
+    "@sentry-internal/feedback": ["@sentry-internal/feedback@10.30.0", "", { "dependencies": { "@sentry/core": "10.30.0" } }, "sha512-+bnQZ6SNF265nTXrRlXTmq5Ila1fRfraDOAahlOT/VM4j6zqCvNZzmeDD9J6IbxiAdhlp/YOkrG3zbr5vgYo0A=="],
 
-    "@sentry-internal/replay": ["@sentry-internal/replay@9.14.0", "", { "dependencies": { "@sentry-internal/browser-utils": "9.14.0", "@sentry/core": "9.14.0" } }, "sha512-wgt397/PtpfVQ9t779a0L+hGH3JN9doXv3+9Wj98MLWwhymvJBjpjCFUBLScO5iP6imewTbRqQHbq7XS7I+x1A=="],
+    "@sentry-internal/replay": ["@sentry-internal/replay@10.30.0", "", { "dependencies": { "@sentry-internal/browser-utils": "10.30.0", "@sentry/core": "10.30.0" } }, "sha512-Pj/fMIZQkXzIw6YWpxKWUE5+GXffKq6CgXwHszVB39al1wYz1gTIrTqJqt31IBLIihfCy8XxYddglR2EW0BVIQ=="],
 
-    "@sentry-internal/replay-canvas": ["@sentry-internal/replay-canvas@9.14.0", "", { "dependencies": { "@sentry-internal/replay": "9.14.0", "@sentry/core": "9.14.0" } }, "sha512-GhCSqc0oNzRiLhQsi9LCXgUmIwdHdvzVIsX4fihoFYWfgWSSj5YLqeEkb3CMM8htM6vheSFzIbPLlRS8fjCrPQ=="],
+    "@sentry-internal/replay-canvas": ["@sentry-internal/replay-canvas@10.30.0", "", { "dependencies": { "@sentry-internal/replay": "10.30.0", "@sentry/core": "10.30.0" } }, "sha512-RIlIz+XQ4DUWaN60CjfmicJq2O2JRtDKM5lw0wB++M5ha0TBh6rv+Ojf6BDgiV3LOQ7lZvCM57xhmNUtrGmelg=="],
 
     "@sentry-internal/tracing": ["@sentry-internal/tracing@7.120.3", "", { "dependencies": { "@sentry/core": "7.120.3", "@sentry/types": "7.120.3", "@sentry/utils": "7.120.3" } }, "sha512-Ausx+Jw1pAMbIBHStoQ6ZqDZR60PsCByvHdw/jdH9AqPrNE9xlBSf9EwcycvmrzwyKspSLaB52grlje2cRIUMg=="],
 
-    "@sentry/browser": ["@sentry/browser@9.14.0", "", { "dependencies": { "@sentry-internal/browser-utils": "9.14.0", "@sentry-internal/feedback": "9.14.0", "@sentry-internal/replay": "9.14.0", "@sentry-internal/replay-canvas": "9.14.0", "@sentry/core": "9.14.0" } }, "sha512-acxFbFEei3hzKr/IW3OmkzHlwohRaRBG0872nIhLYV2f/BgZmR6eV5zrUoELMmt2cgoLmDYyfp1734OoplfDbw=="],
+    "@sentry/browser": ["@sentry/browser@10.30.0", "", { "dependencies": { "@sentry-internal/browser-utils": "10.30.0", "@sentry-internal/feedback": "10.30.0", "@sentry-internal/replay": "10.30.0", "@sentry-internal/replay-canvas": "10.30.0", "@sentry/core": "10.30.0" } }, "sha512-7M/IJUMLo0iCMLNxDV/OHTPI0WKyluxhCcxXJn7nrCcolu8A1aq9R8XjKxm0oTCO8ht5pz8bhGXUnYJj4eoEBA=="],
 
-    "@sentry/core": ["@sentry/core@9.14.0", "", {}, "sha512-OLfucnP3LAL5bxVNWc2RVOHCX7fk9Er5bWPCS+O5cPjqNUUz0HQHhVh2Vhei5C0kYZZM4vy4BQit5T9LrlOaNA=="],
+    "@sentry/core": ["@sentry/core@10.30.0", "", {}, "sha512-IfNuqIoGVO9pwphwbOptAEJJI1SCAfewS5LBU1iL7hjPBHYAnE8tCVzyZN+pooEkQQ47Q4rGanaG1xY8mjTT1A=="],
 
-    "@sentry/react": ["@sentry/react@9.14.0", "", { "dependencies": { "@sentry/browser": "9.14.0", "@sentry/core": "9.14.0", "hoist-non-react-statics": "^3.3.2" } }, "sha512-0dRfTorcInBjxVnis6Zv0+Jqex2OXFNQf+cQanKuC0IRkAhZyD2+UO2/v39sSmtvrHIcZRQ9fta8qKdhFUXCqg=="],
+    "@sentry/react": ["@sentry/react@10.30.0", "", { "dependencies": { "@sentry/browser": "10.30.0", "@sentry/core": "10.30.0", "hoist-non-react-statics": "^3.3.2" }, "peerDependencies": { "react": "^16.14.0 || 17.x || 18.x || 19.x" } }, "sha512-3co0QwAU9VrCVBWgpRf/4G19MwzR+DM0sDe9tgN7P3pv/tMlEHhnPFv88nPfuSa2W8uVCpHehvV+GnUPF4V7Ag=="],
 
     "@sentry/tracing": ["@sentry/tracing@7.120.3", "", { "dependencies": { "@sentry-internal/tracing": "7.120.3" } }, "sha512-B7bqyYFgHuab1Pn7w5KXsZP/nfFo4VDBDdSXDSWYk5+TYJ3IDruO3eJFhOrircfsz4YwazWm9kbeZhkpsHDyHg=="],
 
@@ -610,7 +611,7 @@
 
     "hasown": ["hasown@2.0.2", "", { "dependencies": { "function-bind": "^1.1.2" } }, "sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ=="],
 
-    "hoist-non-react-statics": ["hoist-non-react-statics@https://registry.npmjs.org/hoist-non-react-statics/-/hoist-non-react-statics-3.3.2.tgz", { "dependencies": { "react-is": "^16.7.0" } }],
+    "hoist-non-react-statics": ["hoist-non-react-statics@3.3.2", "", { "dependencies": { "react-is": "^16.7.0" } }, "sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw=="],
 
     "http-parser-js": ["http-parser-js@https://registry.npmjs.org/http-parser-js/-/http-parser-js-0.5.6.tgz", {}],
 
@@ -1165,8 +1166,6 @@
     "has/function-bind": ["function-bind@https://registry.npmjs.org/function-bind/-/function-bind-1.1.1.tgz", {}],
 
     "has-tostringtag/has-symbols": ["has-symbols@1.0.3", "", {}, "sha512-l3LCuF6MgDNwTDKkdYGEihYjt5pRPbEg46rtlmnSPlUbgmB8LOIrKJbYYFBSbnPaJexMKtiPO8hmeRjRz2Td+A=="],
-
-    "hoist-non-react-statics/react-is": ["react-is@https://registry.npmjs.org/react-is/-/react-is-16.13.1.tgz", {}],
 
     "is-array-buffer/call-bind": ["call-bind@1.0.2", "", { "dependencies": { "function-bind": "^1.1.1", "get-intrinsic": "^1.0.2" } }, "sha512-7O+FbCihrB5WGbFYesctwmTKae6rOiIzmz1icreWJ+0aA7LJfuqhEso2T9ncpcFtzMQtzXf2QGGueWJGTYsqrA=="],
 
