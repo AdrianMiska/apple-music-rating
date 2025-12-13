@@ -54,6 +54,19 @@ export function selectHighInformationMatchup(
   // If there are less than 2 songs, we cannot create a matchup
   if (songs.length < 2) return null;
 
+  // Inject a little exploration so we don't over-focus on one narrow region of the pool.
+  // This improves variety and tends to speed up global convergence (more coverage).
+  if (Math.random() < 0.12) {
+    const aIdx = Math.floor(Math.random() * songs.length);
+    let bIdx = Math.floor(Math.random() * (songs.length - 1));
+    if (bIdx >= aIdx) bIdx++;
+    const a = songs[aIdx];
+    const b = songs[bIdx];
+    return Math.random() < 0.5
+      ? { baseline: a, candidate: b }
+      : { baseline: b, candidate: a };
+  }
+
   let bestScore = -1;
   let bestPair: RatingPair | null = null;
 
@@ -73,8 +86,11 @@ export function selectHighInformationMatchup(
       // Compute the entropy of the matchup
       let H = computeEntropy(p);
 
-      // Weight the entropy by the inverse of the sum of rating counts
-      let W = 1 / (1 + aCount + bCount);
+      // Weight the matchup toward uncertainty without requiring both songs to be under-voted.
+      // Using the average inverse-count means:
+      // - If either song is under-rated (low count), the pair stays attractive.
+      // - A low-count song can be paired with a high-count "anchor" song (more variance, faster calibration).
+      let W = 0.5 * (1 / (1 + aCount) + 1 / (1 + bCount));
 
       // Calculate the score of this matchup with added randomness
       let score = H * W * (0.9 + Math.random() * 0.2);
@@ -143,11 +159,11 @@ export async function getEloRating(
     let document = await getDoc(docRef);
     return new EloRecord(
       song.id,
-      document?.data()?.rating | 0,
-      document?.data()?.ratingCount | 0,
+      Number(document?.data()?.rating ?? 0),
+      Number(document?.data()?.ratingCount ?? 0),
     );
   } else {
-    let rating = parseInt(
+    let rating = parseFloat(
       localStorage.getItem(playlistId + "/" + song.id) || "0",
     );
     let ratingCount = parseInt(
@@ -224,7 +240,28 @@ export async function calculateElo(
   const outcomeCandidate =
     winner === "candidate" ? 1 : winner === "tie" ? 0.5 : 0;
 
-  const kFactor = winner === "tie" ? 16 : 32;
+  // Dynamic K-factor to speed convergence:
+  // - Higher when either song has low vote count (high uncertainty).
+  // - Higher for "informative" matchups:
+  //   - wins/losses are most informative near p=0.5 (high entropy)
+  //   - ties are most informative when p is far from 0.5 (surprising draw)
+  const baseK = 32;
+  const aCount = baselineRecord.ratingCount || 0;
+  const bCount = candidateRecord.ratingCount || 0;
+  const uncertainty =
+    0.5 * (1 / Math.sqrt(1 + aCount) + 1 / Math.sqrt(1 + bCount)); // ~ (0, 1]
+  const uncertaintyMultiplier = 0.75 + 1.75 * uncertainty; // ~ [0.75..2.5]
+
+  const info =
+    winner === "tie"
+      ? 2 * Math.abs(0.5 - pBaseline) // [0..1], higher when tie is "surprising"
+      : computeEntropy(pBaseline); // [0..1], higher when close match
+  const infoMultiplier = 0.75 + 0.75 * info; // ~ [0.75..1.5]
+
+  const kFactor = Math.max(
+    8,
+    Math.min(64, baseK * uncertaintyMultiplier * infoMultiplier),
+  );
 
   let newBaselineRating =
     baselineRecord.rating + (outcomeBaseline - pBaseline) * kFactor;
